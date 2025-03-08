@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions about LangChain
+    url: https://github.com/langchain-ai/langchain/discussions
+    about: For general questions about LangChain library
+  - name: Questions about Next.js
+    url: https://github.com/vercel/next.js/discussions
+    about: For general questions about Next.js framework
+  - name: Project Discussion
+    url: https://github.com/ahmabboud/nssf-lawyer-langchain/discussions
+    about: Discuss ideas, ask questions, or share feedback about this project
