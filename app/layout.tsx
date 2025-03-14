@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GithubIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import MainContentWrapper from "@/components/MainContentWrapper";
 
 const publicSans = Public_Sans({ subsets: ["latin"] });
 
@@ -101,7 +102,9 @@ export default function RootLayout({
               </div>
             </div>
             <div className="bg-background mx-4 relative grid rounded-t-2xl border border-input border-b-0">
-              <div className="absolute inset-0">{children}</div>
+              <div className="absolute inset-0">
+                <MainContentWrapper>{children}</MainContentWrapper>
+              </div>
             </div>
           </div>
           <Toaster />
