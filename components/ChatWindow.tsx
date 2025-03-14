@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import { ArrowDown, LoaderCircle, Paperclip } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { UploadDocumentsForm } from "./UploadDocumentsForm";
+import { FileUploadForm } from "./FileUploadForm";
 import {
   Dialog,
   DialogContent,
@@ -330,7 +331,16 @@ export function ChatWindow(props: {
                     Upload a document to use for the chat.
                   </DialogDescription>
                 </DialogHeader>
-                <UploadDocumentsForm />
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <h3 className="font-medium mb-2">Upload a .docx file</h3>
+                    <FileUploadForm />
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="font-medium mb-2">Or paste text directly</h3>
+                    <UploadDocumentsForm />
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
           )}
