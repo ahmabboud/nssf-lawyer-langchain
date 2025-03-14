@@ -76,8 +76,11 @@ The retrieval examples both use Supabase as a vector store. However, you can swa
 [another supported vector store](https://js.langchain.com/docs/integrations/vectorstores) if preferred by changing
 the code under `app/api/retrieval/ingest/route.ts`, `app/api/chat/retrieval/route.ts`, and `app/api/chat/retrieval_agents/route.ts`.
 
-For Supabase, follow [these instructions](https://js.langchain.com/docs/integrations/vectorstores/supabase) to set up your
-database, then get your database URL and private key and paste them into `.env.local`.
+For Supabase, we've included SQL setup scripts in the `db/supabase` directory to make the setup process easier:
+1. Run the scripts in the SQL editor of your Supabase project in numerical order
+2. Get your database URL and service role key and paste them into `.env.local`
+
+See the [Supabase setup guide](/db/supabase/README.md) for detailed instructions.
 
 You can then switch to the `Retrieval` and `Retrieval Agent` examples. The default document text is pulled from the LangChain.js retrieval
 use case docs, but you can change them to whatever text you'd like.
