@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     } catch (storageError) {
       console.error("Error storing documents in vector store:", storageError);
       return NextResponse.json({ 
-        error: `Failed to store document in vector store: ${storageError.message}` 
+        error: `Failed to store document in vector store: ${(storageError as Error).message}` 
       }, { status: 500 });
     }
 
