@@ -44,7 +44,7 @@ async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
     return simpleExtractTextFromXml(contentXml);
   } catch (e) {
     console.error('Error extracting DOCX content:', e);
-    throw new Error(`Failed to extract text from DOCX: ${e.message}`);
+    throw new Error(`Failed to extract text from DOCX: ${(e as Error).message}`);
   }
 }
 
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         extractedText = `Document: ${file.name}. This document was uploaded but its content could not be properly extracted. Please try converting the document to plain text before uploading for best results.`;
       } catch (fallbackError) {
         return NextResponse.json({ 
-          error: `Failed to extract content: ${extractError.message}` 
+          error: `Failed to extract content: ${(extractError as Error).message}` 
         }, { status: 500 });
       }
     }
@@ -166,8 +166,8 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     console.error("Error processing file:", e);
     return NextResponse.json({ 
-      error: `File processing error: ${e.message}`,
-      stack: process.env.NODE_ENV === 'development' ? e.stack : undefined
+      error: `File processing error: ${(e as Error).message}`,
+      stack: process.env.NODE_ENV === 'development' ? (e as Error).stack : undefined
     }, { status: 500 });
   }
 }
