@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Public_Sans } from "next/font/google";
-import { ActiveLink } from "@/components/Navbar";
+import { ActiveLink, Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { GithubIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
@@ -88,8 +88,8 @@ export default function RootLayout({
                   <ActiveLink href="/langgraph">🕸️ LangGraph</ActiveLink>
                 </nav>
               </div>
-
-              <div className="flex justify-center">
+              <div className="flex justify-center items-center gap-2">
+                <Navbar />
                 <Button asChild variant="outline" size="default">
                   <a
                     href="https://github.com/langchain-ai/langchain-nextjs-template"
