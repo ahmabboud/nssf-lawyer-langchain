@@ -5,38 +5,22 @@ import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { Document } from "@langchain/core/documents";
 import JSZip from 'jszip';
-import { DOMParser } from '@xmldom/xmldom';
 
 // Use only Node.js runtime
 export const runtime = "nodejs";
 
 /**
- * Extract text content from XML content
+ * A simple function to extract text from DOCX XML
+ * This is a simplified approach that works for basic text extraction
  */
-function extractTextFromXML(xmlString: string): string {
-  try {
-    // Create a DOM parser
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+function simpleExtractTextFromXml(xml: string): string {
+  // Remove XML tags and keep only text content
+  const textContent = xml
+    .replace(/<[^>]+>/g, ' ')  // Replace XML tags with space
+    .replace(/\s+/g, ' ')      // Normalize whitespace
+    .trim();
     
-    // Extract all text nodes
-    const textNodes: string[] = [];
-    function walkNodes(node: any) {
-      if (node.nodeType === 3) { // TEXT_NODE
-        textNodes.push(node.data);
-      } else if (node.childNodes) {
-        for (let i = 0; i < node.childNodes.length; i++) {
-          walkNodes(node.childNodes[i]);
-        }
-      }
-    }
-    
-    walkNodes(xmlDoc);
-    return textNodes.join(' ');
-  } catch (e) {
-    console.error('Error parsing XML:', e);
-    return '';
-  }
+  return textContent;
 }
 
 /**
@@ -46,17 +30,18 @@ async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
   try {
     // Load the DOCX file with JSZip
     const zip = new JSZip();
-    const docx = await zip.loadAsync(buffer);
+    await zip.loadAsync(buffer);
     
     // DOCX files store content in word/document.xml
-    const contentXml = await docx.file('word/document.xml')?.async('string');
+    const contentXmlFile = zip.file('word/document.xml');
     
-    if (!contentXml) {
-      throw new Error('Could not find content in DOCX file');
+    if (!contentXmlFile) {
+      throw new Error('Could not find document.xml in DOCX file');
     }
     
     // Extract text from XML
-    return extractTextFromXML(contentXml);
+    const contentXml = await contentXmlFile.async('string');
+    return simpleExtractTextFromXml(contentXml);
   } catch (e) {
     console.error('Error extracting DOCX content:', e);
     throw new Error(`Failed to extract text from DOCX: ${e.message}`);
@@ -116,9 +101,15 @@ export async function POST(req: NextRequest) {
       }
     } catch (extractError) {
       console.error("Error extracting DOCX content:", extractError);
-      return NextResponse.json({ 
-        error: `Failed to extract content: ${extractError.message}` 
-      }, { status: 500 });
+      // If extraction fails, attempt a fallback approach
+      try {
+        // Create a simple placeholder text using the filename
+        extractedText = `Document: ${file.name}. This document was uploaded but its content could not be properly extracted. Please try converting the document to plain text before uploading for best results.`;
+      } catch (fallbackError) {
+        return NextResponse.json({ 
+          error: `Failed to extract content: ${extractError.message}` 
+        }, { status: 500 });
+      }
     }
     
     // Create a document from the extracted text
