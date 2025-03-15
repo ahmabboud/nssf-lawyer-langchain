@@ -1,9 +1,12 @@
 "use client";
 
 import { cn } from "@/utils/cn";
-import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
+import { Button } from "./ui/button";
+import { supabase } from "@/utils/supabaseClient";
+import { LogOutIcon } from "lucide-react";
 
 export const ActiveLink = (props: { href: string; children: ReactNode }) => {
   const pathname = usePathname();
@@ -18,4 +21,52 @@ export const ActiveLink = (props: { href: string; children: ReactNode }) => {
       {props.children}
     </Link>
   );
+};
+
+export const Navbar = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Don't show sign out button on auth page
+  if (pathname === '/auth') {
+    return null;
+  }
+
+  return isAuthenticated ? (
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      onClick={handleSignOut}
+      className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+    >
+      <LogOutIcon size={16} />
+      Sign Out
+    </Button>
+  ) : null;
 };
