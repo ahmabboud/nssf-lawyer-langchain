@@ -8,7 +8,13 @@
 DO $$
 DECLARE
   new_user_id UUID;
+  admin_role_id INTEGER;
 BEGIN
+  -- Get the admin role id
+  SELECT id INTO admin_role_id
+  FROM public.roles
+  WHERE name = 'admin';
+
   -- Create the user with email verification already done
   INSERT INTO auth.users (
     instance_id,
@@ -38,7 +44,7 @@ BEGIN
     NOW(),
     NOW(),
     NOW(),
-    '{"provider":"email","providers":["email"]}',
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{}',
     NOW(),
     NOW(),
@@ -48,14 +54,8 @@ BEGIN
     ''
   )
   RETURNING id INTO new_user_id;
-
-  -- Set the user's role to admin
-  UPDATE auth.users
-  SET role = 'admin'
-  WHERE id = new_user_id;
   
   -- Insert into auth.identities for the user
-  -- Include the provider_id which is required and cannot be null
   INSERT INTO auth.identities (
     id,
     user_id,
@@ -70,9 +70,22 @@ BEGIN
     new_user_id,
     format('{"sub":"%s","email":"%s"}', new_user_id, 'ahbmailbox@gmail.com')::jsonb,
     'email',
-    'ahbmailbox@gmail.com', -- provider_id for email provider is typically the email address
+    'ahbmailbox@gmail.com',
     NOW(),
     NOW(),
     NOW()
   );
+
+  -- Assign admin role to the user
+  INSERT INTO public.user_roles (user_id, role_id)
+  VALUES (new_user_id, admin_role_id)
+  ON CONFLICT (user_id) DO UPDATE SET role_id = admin_role_id;
+  
+  -- Add user to admin_users lookup table for RLS policies
+  INSERT INTO public.admin_users (user_id)
+  VALUES (new_user_id)
+  ON CONFLICT (user_id) DO NOTHING;
+  
+  -- Log the created admin user ID
+  RAISE NOTICE 'Created admin user with ID: %', new_user_id;
 END $$;
