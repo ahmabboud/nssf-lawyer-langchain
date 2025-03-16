@@ -14,6 +14,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -71,6 +72,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         console.error('Auth error:', error);
         toast.error('Authentication failed');
         router.replace('/auth');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -117,6 +120,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       subscription.unsubscribe();
     };
   }, [router, pathname]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   if (!isClient) {
     return null;

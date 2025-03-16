@@ -18,6 +18,7 @@ export default function UsersManagementPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('UsersManagementPage mounted');
     loadUsers();
   }, []);
 
