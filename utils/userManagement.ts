@@ -96,8 +96,7 @@ export async function updateUserRole(userId: string, role: UserRole) {
         role_id: roleId,
         created_at: new Date().toISOString()
       }, { 
-        onConflict: 'user_id',
-        returning: 'minimal'
+        onConflict: 'user_id'
       });
 
     console.log('Upsert response:', { status, statusText });
