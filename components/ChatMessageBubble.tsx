@@ -18,7 +18,7 @@ export function ChatMessageBubble(props: {
     >
       {props.message.role !== "user" && (
         <div className="mr-4 border bg-secondary -mt-2 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center">
-          {}
+          {props.aiEmoji}
         </div>
       )}
 
