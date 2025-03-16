@@ -55,11 +55,13 @@ BEGIN
   WHERE id = new_user_id;
   
   -- Insert into auth.identities for the user
+  -- Include the provider_id which is required and cannot be null
   INSERT INTO auth.identities (
     id,
     user_id,
     identity_data,
     provider,
+    provider_id,
     last_sign_in_at,
     created_at,
     updated_at
@@ -68,6 +70,7 @@ BEGIN
     new_user_id,
     format('{"sub":"%s","email":"%s"}', new_user_id, 'ahbmailbox@gmail.com')::jsonb,
     'email',
+    'ahbmailbox@gmail.com', -- provider_id for email provider is typically the email address
     NOW(),
     NOW(),
     NOW()
