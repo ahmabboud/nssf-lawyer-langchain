@@ -43,7 +43,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/images/chatbot-logo.jpg" />
         <meta
           name="description"
-          content="Starter for Lawyer Assistant."
+          content="This is the starter for Lawyer Assistant."
         />
         <meta property="og:title" content="Lawyer Assistant" />
         <meta
