@@ -47,7 +47,10 @@ export const Navbar = () => {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      router.push('/auth');
+      // Clear any stored session data
+      window.localStorage.removeItem('supabase.auth.token');
+      // Force router navigation
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Error signing out:', error);
     }
