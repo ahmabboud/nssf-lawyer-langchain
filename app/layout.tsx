@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import "./globals.css";
 import { Public_Sans } from "next/font/google";
 import { ActiveLink, Navbar } from "@/components/Navbar";
@@ -36,6 +39,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    // This effect will run only on the client side
+    if (typeof window !== "undefined") {
+      document.body.setAttribute("data-new-gr-c-s-check-loaded", "9.75.0");
+      document.body.setAttribute("data-gr-ext-installed", "");
+    }
+  }, []);
+
   return (
     <html lang="en">
       <head>
