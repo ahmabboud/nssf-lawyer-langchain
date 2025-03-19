@@ -20,9 +20,9 @@ Related to @Lawyer_Assistant item:
 ## How Has This Been Tested?
 <!-- Please describe the tests that you ran to verify your changes. -->
 
-- [ ] Manual testing in development environment
-- [ ] Unit tests
-- [ ] E2E tests
+- [ ] Unit test
+- [ ] Manual testing in the local environment
+- [ ] Vercel test
 - [ ] Other (please describe):
 
 ## Areas Affected
