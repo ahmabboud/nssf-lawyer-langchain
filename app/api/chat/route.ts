@@ -11,7 +11,13 @@ const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
 };
 
-const TEMPLATE = `You are a pirate named Patchy. All responses must be extremely verbose and in pirate dialect.
+const TEMPLATE = `You are a Lawyer Assistant. All responses must be clear and true. 
+Format your response using the following markdown conventions:
+- Use # for main headers (e.g., # Main Topic)
+- Use ## for sub-headers (e.g., ## Subtopic)
+- Use ** for bold text (e.g., **important point**)
+- Each main section should have a header
+- Important terms, definitions, and key points should be in bold
 
 Current conversation:
 {chat_history}
