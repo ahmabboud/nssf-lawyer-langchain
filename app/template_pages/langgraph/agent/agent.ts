@@ -5,9 +5,7 @@ import {
   Annotation,
 } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-
 const llm = new ChatOpenAI({ model: "gpt-4o-mini", temperature: 0 });
-
 const builder = new StateGraph(
   Annotation.Root({
     messages: MessagesAnnotation.spec["messages"],
@@ -24,9 +22,7 @@ const builder = new StateGraph(
       },
       ...state.messages,
     ]);
-
     return { messages: message, timestamp: Date.now() };
   })
   .addEdge(START, "agent");
-
 export const graph = builder.compile();

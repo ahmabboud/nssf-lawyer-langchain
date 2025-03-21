@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
+import { PostgrestResponse } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'pro' | 'free';
 
@@ -10,27 +11,53 @@ export interface UserData {
   created_at?: string;
 }
 
+interface DbUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  created_at: string;
+}
+
+const TIMEOUT_MS = 5000; // 5 second timeout
+
+const withTimeout = <T>(promise: Promise<PostgrestResponse<T>>, timeoutMs: number): Promise<PostgrestResponse<T>> => {
+  return Promise.race([
+    promise,
+    new Promise<PostgrestResponse<T>>((_, reject) => 
+      setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
+    )
+  ]);
+};
+
 export async function fetchUsers(): Promise<UserData[]> {
   try {
     toast.info('Fetching users from database...');
-    const { data: users, error } = await supabase
-      .from('user_management_view')
-      .select('*');
+    const { data: users, error } = await withTimeout<DbUser>(
+      Promise.resolve(
+        supabase
+          .from('user_management_view')
+          .select('*')
+      ),
+      TIMEOUT_MS
+    );
 
     if (error) {
+      console.error('Failed to fetch users:', error);
       toast.error(`Failed to fetch users: ${error.message}`);
       throw new Error(`Failed to fetch users: ${error.message}`);
     }
     
-    const mappedUsers = (users || []).map(user => ({
+    const mappedUsers = (users || []).map((user: DbUser) => ({
       id: user.id,
       email: user.email,
-      role: (user.role as UserRole) || 'free',
+      role: user.role || 'free',
       created_at: user.created_at
     }));
     toast.success(`Successfully fetched ${mappedUsers.length} users`);
     return mappedUsers;
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unexpected error while fetching users';
+    console.error('fetchUsers error:', message);
     toast.error('Unexpected error while fetching users');
     throw error;
   }
