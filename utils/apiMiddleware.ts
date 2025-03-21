@@ -12,7 +12,7 @@ export class APIError extends Error {
 type HandlerFunction = (req: NextRequest, session?: any) => Promise<Response>;
 
 export async function withErrorHandling(handler: HandlerFunction) {
-  // Validate environment configuration
+  // Validate environment configuration - only runs server-side
   try {
     validateConfig();
   } catch (error) {

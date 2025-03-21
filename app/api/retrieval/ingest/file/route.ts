@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { createClient } from "@supabase/supabase-js";
+import { Document } from "@langchain/core/documents";
+import { createServerSupabaseClient } from "@/utils/serverSupabaseClient";
+import { config } from "@/utils/config";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { Document } from "@langchain/core/documents";
 import JSZip from 'jszip';
 
 // Use only Node.js runtime
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 /**
  * A simple function to extract text from DOCX XML
@@ -53,7 +54,7 @@ async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
  * splits it into chunks, and embeds those chunks into a vector store for later retrieval.
  */
 export async function POST(req: NextRequest) {
-  if (process.env.NEXT_PUBLIC_DEMO === "true") {
+  if (config.features.demoMode) {
     return NextResponse.json(
       {
         error: [
@@ -120,12 +121,9 @@ export async function POST(req: NextRequest) {
         type: 'docx' 
       }
     });
-
+    
     // Create a Supabase client
-    const client = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PRIVATE_KEY!,
-    );
+    const client = createServerSupabaseClient();
 
     // Split the document into chunks
     console.log("Splitting document into chunks");
@@ -167,7 +165,7 @@ export async function POST(req: NextRequest) {
     console.error("Error processing file:", e);
     return NextResponse.json({ 
       error: `File processing error: ${(e as Error).message}`,
-      stack: process.env.NODE_ENV === 'development' ? (e as Error).stack : undefined
+      stack: config.features.isDevelopment ? (e as Error).stack : undefined
     }, { status: 500 });
   }
 }
