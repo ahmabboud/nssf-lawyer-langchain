@@ -7,8 +7,8 @@ import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
 import { OpenAIEmbeddings } from "@langchain/openai";
 import JSZip from 'jszip';
 
-// Use only Node.js runtime
-export const runtime = "edge";
+// Use Node.js runtime instead of Edge Runtime to support JSZip's use of setImmediate
+export const runtime = "nodejs";
 
 /**
  * A simple function to extract text from DOCX XML
