@@ -5,44 +5,22 @@ import { createServerSupabaseClient } from "@/utils/serverSupabaseClient";
 import { config } from "@/utils/config";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import JSZip from 'jszip';
+import mammoth from 'mammoth';
 
 // Use Node.js runtime instead of Edge Runtime to support JSZip's use of setImmediate
 export const runtime = "nodejs";
 
 /**
- * A simple function to extract text from DOCX XML
- * This is a simplified approach that works for basic text extraction
- */
-function simpleExtractTextFromXml(xml: string): string {
-  // Remove XML tags and keep only text content
-  const textContent = xml
-    .replace(/<[^>]+>/g, ' ')  // Replace XML tags with space
-    .replace(/\s+/g, ' ')      // Normalize whitespace
-    .trim();
-    
-  return textContent;
-}
-
-/**
- * Extract text from a DOCX file using JSZip
+ * Extract text from a DOCX file using mammoth
  */
 async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
   try {
-    // Load the DOCX file with JSZip
-    const zip = new JSZip();
-    await zip.loadAsync(buffer);
+    // Use mammoth to convert docx to HTML and then get the text value
+    const result = await mammoth.extractRawText({
+      arrayBuffer: buffer
+    });
     
-    // DOCX files store content in word/document.xml
-    const contentXmlFile = zip.file('word/document.xml');
-    
-    if (!contentXmlFile) {
-      throw new Error('Could not find document.xml in DOCX file');
-    }
-    
-    // Extract text from XML
-    const contentXml = await contentXmlFile.async('string');
-    return simpleExtractTextFromXml(contentXml);
+    return result.value || '';
   } catch (e) {
     console.error('Error extracting DOCX content:', e);
     throw new Error(`Failed to extract text from DOCX: ${(e as Error).message}`);
