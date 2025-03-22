@@ -1,10 +1,16 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type Dispatch, type SetStateAction } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2 } from "lucide-react";
 
-export function FileUploadForm() {
+interface FileUploadFormProps {
+  onLoadingChange?: Dispatch<SetStateAction<boolean>>;
+  onError?: Dispatch<SetStateAction<string | null>>;
+  disabled?: boolean;
+}
+
+export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploadFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -20,42 +26,44 @@ export function FileUploadForm() {
     e.preventDefault();
     if (!file) {
       setMessage("Please select a file first.");
+      if (onError) onError("Please select a file first.");
       return;
     }
 
     setIsLoading(true);
+    if (onLoadingChange) onLoadingChange(true);
     setMessage("Uploading and processing file...");
 
     try {
       // Create form data for file upload
       const formData = new FormData();
       formData.append("file", file);
-
       const response = await fetch("/api/retrieval/ingest/file", {
         method: "POST",
         body: formData,
       });
-
       if (response.status === 200) {
         const data = await response.json();
         setMessage(data.message || "File uploaded and processed successfully!");
+        if (onError) onError(null);
         setFile(null);
         // Reset the file input
         const fileInput = document.getElementById("fileUpload") as HTMLInputElement;
         if (fileInput) fileInput.value = "";
       } else {
         const json = await response.json();
-        if (json.error) {
-          setMessage(`Error: ${json.error}`);
-        } else {
-          setMessage("An unknown error occurred during upload");
-        }
+        const errorMessage = json.error ? `Error: ${json.error}` : "An unknown error occurred during upload";
+        setMessage(errorMessage);
+        if (onError) onError(errorMessage);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      setMessage("Error uploading file. See console for details.");
+      const errorMessage = "Error uploading file. See console for details.";
+      setMessage(errorMessage);
+      if (onError) onError(errorMessage);
     } finally {
       setIsLoading(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
   };
 
@@ -72,9 +80,9 @@ export function FileUploadForm() {
             accept=".txt,.docx,.pdf"
             onChange={handleFileChange}
             className="flex-1"
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           />
-          <Button type="submit" disabled={isLoading || !file}>
+          <Button type="submit" disabled={isLoading || !file || disabled}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
