@@ -1,43 +1,69 @@
 import { NextRequest, NextResponse } from "next/server";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { Document } from "@langchain/core/documents";
-import { createServerSupabaseClient } from "@/utils/serverSupabaseClient";
-import { config } from "@/utils/config";
-import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import mammoth from 'mammoth';
+import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
+import { config } from "@/utils/config";
+import { createServerSupabaseClient } from "@/utils/serverSupabaseClient";
+import { Document } from "@langchain/core/documents";
+import * as pdfjs from 'pdfjs-dist';
 
-// Use Node.js runtime instead of Edge Runtime to support JSZip's use of setImmediate
+// Set worker path for pdf.js
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
+// Change runtime from edge to nodejs
 export const runtime = "nodejs";
 
 /**
- * Extract text from a DOCX file using mammoth
+ * Sanitize text content to remove invalid Unicode sequences and normalize text
  */
-async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
+function sanitizeText(text: string): string {
+  return text
+    .replace(/[\uFFFD\uFFFE\uFFFF]/g, '')
+    .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F]/g, '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Extract text content from a DOCX file using mammoth library
+ */
+async function extractDocxContent(buffer: ArrayBuffer): Promise<string> {
   try {
-    // Use mammoth to convert docx to HTML and then get the text value
-    const result = await mammoth.extractRawText({
-      arrayBuffer: buffer
-    });
+    // Dynamically import mammoth to avoid edge runtime issues
+    const mammoth = await import('mammoth');
     
-    return result.value || '';
-  } catch (e) {
-    console.error('Error extracting DOCX content:', e);
-    throw new Error(`Failed to extract text from DOCX: ${(e as Error).message}`);
+    // Convert the ArrayBuffer to a Buffer that mammoth can work with
+    const nodeBuffer = Buffer.from(buffer);
+    
+    // Use mammoth to convert DOCX to text using the buffer format
+    const result = await mammoth.extractRawText({ buffer: nodeBuffer });
+    
+    // Get the text content from the result
+    const textContent = result.value;
+    
+    if (!textContent || textContent.trim().length === 0) {
+      throw new Error('No readable content found in the DOCX file');
+    }
+    
+    return textContent;
+  } catch (error: any) {
+    console.error('DOCX extraction error:', error);
+    throw new Error(`Failed to extract text from DOCX file: ${error.message}`);
   }
 }
 
 /**
- * This handler takes a .docx file, extracts the text content,
- * splits it into chunks, and embeds those chunks into a vector store for later retrieval.
+ * Processes and ingests documents uploaded via file upload into the Supabase vector store
  */
 export async function POST(req: NextRequest) {
   if (config.features.demoMode) {
     return NextResponse.json(
       {
         error: [
-          "File upload is not supported in demo mode.",
-          "Please set up your own version of the repo here: https://github.com/langchain-ai/langchain-nextjs-template",
+          "File ingest is not supported in demo mode.",
+          "Please set up your own version of the repo.",
         ].join("\n"),
       },
       { status: 403 },
@@ -45,105 +71,107 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Process the multipart form data
     const formData = await req.formData();
-    const file = formData.get("file") as File;
-    
+    const file = formData.get("file") as File | null;
+
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-    
-    // Check if file is a .docx file
-    if (!file.name.endsWith('.docx')) {
       return NextResponse.json(
-        { error: "Only .docx files are supported" }, 
+        { error: "No file provided" },
         { status: 400 }
       );
     }
+
+    // Get the file content based on its type
+    let fileContent = '';
+    const buffer = await file.arrayBuffer();
     
-    console.log(`Processing file: ${file.name}, size: ${file.size} bytes`);
-    
-    // Get file buffer for processing
-    const bytes = await file.arrayBuffer();
-    
-    // Extract text content from the DOCX file
-    let extractedText;
-    try {
-      extractedText = await extractTextFromDocx(bytes);
-      console.log(`Extracted ${extractedText.length} characters of text content`);
-      
-      if (!extractedText || extractedText.trim().length === 0) {
-        return NextResponse.json(
-          { error: "Could not extract any text from the document" },
-          { status: 400 }
-        );
-      }
-    } catch (extractError) {
-      console.error("Error extracting DOCX content:", extractError);
-      // If extraction fails, attempt a fallback approach
+    if (file.name.endsWith('.docx')) {
       try {
-        // Create a simple placeholder text using the filename
-        extractedText = `Document: ${file.name}. This document was uploaded but its content could not be properly extracted. Please try converting the document to plain text before uploading for best results.`;
-      } catch (fallbackError) {
+        fileContent = sanitizeText(await extractDocxContent(buffer));
+        console.log('Extracted DOCX content length:', fileContent.length);
+        
+        if (!fileContent) {
+          throw new Error('No content was extracted from the DOCX file');
+        }
+      } catch (docxError: any) {
+        console.error('DOCX processing error:', docxError);
         return NextResponse.json({ 
-          error: `Failed to extract content: ${(extractError as Error).message}` 
-        }, { status: 500 });
+          error: `DOCX processing error: ${docxError.message}` 
+        }, { status: 400 });
       }
-    }
-    
-    // Create a document from the extracted text
-    const doc = new Document({
-      pageContent: extractedText,
-      metadata: { 
-        source: file.name,
-        type: 'docx' 
+    } else if (file.name.endsWith('.pdf')) {
+      // Process PDF using pdf.js
+      const typedArray = new Uint8Array(buffer);
+      const pdfDoc = await pdfjs.getDocument({ data: typedArray }).promise;
+      const textContents = [];
+      
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const content = await page.getTextContent();
+        const text = content.items.map((item: any) => item.str).join(' ');
+        textContents.push(sanitizeText(text));
       }
-    });
-    
-    // Create a Supabase client
-    const client = createServerSupabaseClient();
-
-    // Split the document into chunks
-    console.log("Splitting document into chunks");
-    const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-      chunkSize: 256,
-      chunkOverlap: 20,
-    });
-
-    const splitDocuments = await splitter.splitDocuments([doc]);
-    console.log(`Created ${splitDocuments.length} document chunks`);
-
-    // Store the document chunks in the vector store
-    console.log("Storing documents in vector store");
-    try {
-      await SupabaseVectorStore.fromDocuments(
-        splitDocuments,
-        new OpenAIEmbeddings(),
-        {
-          client,
-          tableName: "documents",
-          queryName: "match_documents",
-        },
+      
+      fileContent = textContents.join('\n\n');
+    } else if (file.name.endsWith('.txt')) {
+      // Process .txt files
+      fileContent = sanitizeText(await file.text());
+    } else {
+      return NextResponse.json(
+        { error: "Unsupported file type. Please upload a .txt, .docx, or .pdf file." },
+        { status: 400 }
       );
-    } catch (storageError) {
-      console.error("Error storing documents in vector store:", storageError);
-      return NextResponse.json({ 
-        error: `Failed to store document in vector store: ${(storageError as Error).message}` 
-      }, { status: 500 });
     }
 
-    console.log("Document processing complete");
+    // Ensure the content is not empty after sanitization
+    if (!fileContent.trim()) {
+      return NextResponse.json(
+        { error: "No valid text content could be extracted from the file" },
+        { status: 400 }
+      );
+    }
+
+    // Create Supabase client
+    const client = createServerSupabaseClient();
+    
+    // Split the document into chunks
+    const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+      chunkSize: 1000,
+      chunkOverlap: 100,
+    });
+
+    // Create document metadata with file info
+    const metadata = {
+      source: file.name,
+      uploadDate: new Date().toISOString(),
+    };
+
+    // Create documents with content and metadata
+    const docs = await splitter.createDocuments(
+      [fileContent],
+      [metadata]
+    );
+
+    // Store documents in the Supabase vector store
+    await SupabaseVectorStore.fromDocuments(
+      docs,
+      new OpenAIEmbeddings(),
+      {
+        client,
+        tableName: "documents",
+        queryName: "match_documents",
+      },
+    );
+
     return NextResponse.json({ 
-      ok: true,
-      message: "File uploaded and processed successfully",
-      documentName: file.name,
-      chunkCount: splitDocuments.length
+      success: true,
+      message: `Successfully processed and stored ${docs.length} chunks from ${file.name}` 
     }, { status: 200 });
+    
   } catch (e: any) {
     console.error("Error processing file:", e);
     return NextResponse.json({ 
-      error: `File processing error: ${(e as Error).message}`,
-      stack: config.features.isDevelopment ? (e as Error).stack : undefined
+      error: e.message || "An error occurred while processing the file" 
     }, { status: 500 });
   }
 }

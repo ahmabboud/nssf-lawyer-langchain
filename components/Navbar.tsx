@@ -6,7 +6,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { supabase } from "@/utils/supabaseClient";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, FileTextIcon } from "lucide-react";
 
 export const ActiveLink = (props: { href: string; children: ReactNode }) => {
   const pathname = usePathname();
@@ -25,6 +25,7 @@ export const ActiveLink = (props: { href: string; children: ReactNode }) => {
 
 export const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -32,13 +33,54 @@ export const Navbar = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
+      
+      // Check if user has admin role (you would need to implement this based on your user model)
+      if (session) {
+        // This is a simplified check - implement proper role checking based on your database schema
+        try {
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (!error && userData && userData.role === 'admin') {
+            setIsAdmin(true);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      }
     };
+    
     checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
+      
+      if (!session) {
+        setIsAdmin(false);
+      } else {
+        // Same admin check as above on auth state change
+        try {
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (!error && userData && userData.role === 'admin') {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
+      }
     });
-
+    
     return () => {
       subscription.unsubscribe();
     };
@@ -56,20 +98,37 @@ export const Navbar = () => {
     }
   };
 
-  // Don't show sign out button on auth page
+  // Don't show navbar on auth page
   if (pathname === '/auth') {
     return null;
   }
 
-  return isAuthenticated ? (
-    <Button 
-      variant="ghost" 
-      size="sm" 
-      onClick={handleSignOut}
-      className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-    >
-      <LogOutIcon size={16} />
-      Sign Out
-    </Button>
-  ) : null;
+  return (
+    <nav className="flex items-center justify-between py-2 px-4">
+      <div className="flex items-center space-x-2">
+        <ActiveLink href="/">
+          Home
+        </ActiveLink>
+        
+        {isAdmin && (
+          <ActiveLink href="/admin/documents">
+            <FileTextIcon size={16} />
+            <span>Documents</span>
+          </ActiveLink>
+        )}
+      </div>
+      
+      {isAuthenticated && (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleSignOut}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <LogOutIcon size={16} />
+          Sign Out
+        </Button>
+      )}
+    </nav>
+  );
 };
