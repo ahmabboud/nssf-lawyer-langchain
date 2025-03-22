@@ -20,8 +20,8 @@ export default function Home() {
         <li className="text-l">
           💬
           <span className="ml-2">
-            Try asking questions like "What are the eligibility requirements for NSSF benefits?" or
-            "Explain the NSSF contribution rates"
+            Try asking questions like &ldquo;What are the eligibility requirements for NSSF benefits?&rdquo; or
+            &ldquo;Explain the NSSF contribution rates&rdquo;
           </span>
         </li>
       </ul>
