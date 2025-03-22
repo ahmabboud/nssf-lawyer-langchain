@@ -8,6 +8,7 @@ import { Textarea } from "./ui/textarea";
 export function UploadDocumentsForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [document, setDocument] = useState(DEFAULT_RETRIEVAL_TEXT);
+
   const ingest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -18,7 +19,7 @@ export function UploadDocumentsForm() {
       }),
     });
     if (response.status === 200) {
-      setDocument("Uploaded!");
+      setDocument("تم التحميل بنجاح!"); // Updated text to Arabic
     } else {
       const json = await response.json();
       if (json.error) {
@@ -27,10 +28,11 @@ export function UploadDocumentsForm() {
     }
     setIsLoading(false);
   };
+
   return (
-    <form onSubmit={ingest} className="flex flex-col gap-4 w-full">
+    <form onSubmit={ingest} className="flex flex-col gap-4 w-full" dir="rtl"> {/* Ensure RTL layout */}
       <Textarea
-        className="grow p-4 rounded bg-transparent min-h-[512px]"
+        className="grow p-4 rounded bg-transparent min-h-[512px] text-right" // Align text to the right
         value={document}
         onChange={(e) => setDocument(e.target.value)}
       />
@@ -55,9 +57,9 @@ export function UploadDocumentsForm() {
               fill="currentFill"
             />
           </svg>
-          <span className="sr-only">Loading...</span>
+          <span className="sr-only">جاري التحميل...</span> {/* Updated text to Arabic */}
         </div>
-        <span className={isLoading ? "hidden" : ""}>Upload</span>
+        <span className={isLoading ? "hidden" : ""}>تحميل</span> {/* Updated text to Arabic */}
       </Button>
     </form>
   );

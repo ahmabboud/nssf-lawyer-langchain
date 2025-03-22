@@ -55,28 +55,47 @@
   * {
     @apply border-border;
   }
+
+  html {
+    direction: rtl; /* Ensure RTL direction for the entire app */
+  }
+
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    text-align: right; /* Align text to the right for RTL */
   }
 
-  p {
-    margin: 8px 0;
+  input,
+  textarea,
+  select {
+    direction: rtl; /* Ensure input fields are RTL */
+    text-align: right; /* Align text to the right */
   }
 
-  code {
-    @apply dark:text-orange-400 text-orange-700;
+  [dir="rtl"] .flex {
+    flex-direction: row-reverse; /* Reverse flex direction for RTL */
   }
 
-  li {
-    padding: 4px;
+  [dir="rtl"] .text-left {
+    text-align: right; /* Ensure text-left aligns right in RTL */
   }
 
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+  [dir="rtl"] .text-right {
+    text-align: left; /* Ensure text-right aligns left in RTL */
   }
 
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  [dir="rtl"] .ml-auto {
+    margin-left: 0;
+    margin-right: auto; /* Adjust margins for RTL */
+  }
+
+  [dir="rtl"] .mr-auto {
+    margin-right: 0;
+    margin-left: auto; /* Adjust margins for RTL */
+  }
+
+  .login-page {
+    direction: rtl; /* Force RTL on the login page */
+    text-align: right;
   }
 }

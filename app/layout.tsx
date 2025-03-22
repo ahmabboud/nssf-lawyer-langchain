@@ -48,26 +48,26 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl"> {/* Updated lang to "ar" and dir to "rtl" */}
       <head>
-        <title>Lawyer Assistant</title>
+        <title>مساعد المحامي</title> {/* Updated title to Arabic */}
         <link rel="shortcut icon" href="/images/chatbot-logo.jpg" />
         <meta
           name="description"
-          content="This is the starter for Lawyer Assistant."
-        />
-        <meta property="og:title" content="Lawyer Assistant" />
+          content="هذا هو المساعد الافتراضي لمساعد المحامي."
+        /> {/* Updated description to Arabic */}
+        <meta property="og:title" content="مساعد المحامي" /> {/* Updated OG title to Arabic */}
         <meta
           property="og:description"
-          content="Starter for Lawyer Assistant."
-        />
+          content="البداية لمساعد المحامي."
+        /> {/* Updated OG description to Arabic */}
         <meta property="og:image" content="/images/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Lawyer Assistant" />
+        <meta name="twitter:title" content="مساعد المحامي" /> {/* Updated Twitter title to Arabic */}
         <meta
           name="twitter:description"
-          content="Starter for Lawyer Assistant."
-        />
+          content="البداية لمساعد المحامي."
+        /> {/* Updated Twitter description to Arabic */}
         <meta name="twitter:image" content="/images/og-image.png" />
       </head>
       <body className={publicSans.className}>
@@ -75,9 +75,9 @@ export default function RootLayout({
           <div className="bg-secondary grid grid-rows-[auto,1fr] h-[100dvh]">
             <div className="grid grid-cols-[1fr,auto] gap-2 p-4">
               <div className="flex gap-4 flex-col md:flex-row md:items-center">
-              <h1 className="text-2xl font-bold text-center">NSSF Lawyer Assistant</h1>
+                <h1 className="text-2xl font-bold text-center">مساعد محامي الضمان الاجتماعي</h1> {/* Updated heading to Arabic */}
                 <nav className="flex gap-1 flex-col md:flex-row">
-                  <ActiveLink href="/"> Chat</ActiveLink>
+                  <ActiveLink href="/"> محادثة</ActiveLink> {/* Updated link text to Arabic */}
                 </nav>
               </div>
               <div className="flex justify-center items-center gap-2">

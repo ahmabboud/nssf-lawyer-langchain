@@ -43,10 +43,16 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        dir="rtl" // Ensure the button is RTL
+        style={{
+          textAlign: "right", // Align text to the right for RTL languages
+          flexDirection: "row-reverse", // Make sure the content is reversed in RTL (icon and text)
+        }}
         {...props}
       />
     );

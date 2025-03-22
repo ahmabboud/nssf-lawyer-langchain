@@ -32,7 +32,7 @@ function ChatMessages(props: {
   className?: string;
 }) {
   return (
-    <div className="flex flex-col max-w-[768px] mx-auto pb-12 w-full">
+    <div className="flex flex-col max-w-[768px] mx-auto pb-12 w-full" dir="rtl">
       {props.messages.map((m, i) => {
         if (m.role === "system") {
           return <IntermediateStep key={m.id} message={m} />;
@@ -77,16 +77,17 @@ export function ChatInput(props: {
         }
       }}
       className={cn("flex w-full flex-col", props.className)}
+      dir="rtl" // Ensure RTL layout
     >
       <div className="border border-input bg-secondary rounded-lg flex flex-col gap-2 max-w-[768px] w-full mx-auto">
         <input
           value={props.value}
           placeholder={props.placeholder}
           onChange={props.onChange}
-          className="border-none outline-none bg-transparent p-4"
+          className="border-none outline-none bg-transparent p-4 text-right" // Align text to the right
         />
 
-        <div className="flex justify-between ml-4 mr-2 mb-2">
+        <div className="flex justify-between ml-2 mr-4 mb-2"> {/* Adjusted margins for RTL */}
           <div className="flex gap-3">{props.children}</div>
 
           <div className="flex gap-2 self-end">
@@ -95,10 +96,10 @@ export function ChatInput(props: {
               {props.loading ? (
                 <span role="status" className="flex justify-center">
                   <LoaderCircle className="animate-spin" />
-                  <span className="sr-only">Loading...</span>
+                  <span className="sr-only">جاري التحميل...</span>
                 </span>
               ) : (
-                <span>Send</span>
+                <span>إرسال</span> /* Updated button text to Arabic */
               )}
             </Button>
           </div>
@@ -119,7 +120,7 @@ function ScrollToBottom(props: { className?: string }) {
       onClick={() => scrollToBottom()}
     >
       <ArrowDown className="w-4 h-4" />
-      <span>Scroll to bottom</span>
+      <span>انتقل إلى الأسفل</span> {/* Updated text to Arabic */}
     </Button>
   );
 }
@@ -132,12 +133,12 @@ function StickyToBottomContent(props: {
 }) {
   const context = useStickToBottomContext();
 
-  // scrollRef will also switch between overflow: unset to overflow: auto
   return (
     <div
       ref={context.scrollRef}
       style={{ width: "100%", height: "100%" }}
       className={cn("grid grid-rows-[1fr,auto]", props.className)}
+      dir="rtl" // Ensure RTL layout
     >
       <div ref={context.contentRef} className={props.contentClassName}>
         {props.content}
@@ -202,7 +203,7 @@ export function ChatWindow(props: {
     },
     streamMode: "text",
     onError: (e) =>
-      toast.error(`Error while processing your request`, {
+      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
         description: e.message,
       }),
   });
@@ -216,7 +217,6 @@ export function ChatWindow(props: {
       return;
     }
 
-    // Some extra work to show intermediate steps properly
     setIntermediateStepsLoading(true);
 
     chat.setInput("");
@@ -238,7 +238,7 @@ export function ChatWindow(props: {
     setIntermediateStepsLoading(false);
 
     if (!response.ok) {
-      toast.error(`Error while processing your request`, {
+      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
         description: json.error,
       });
       return;
@@ -246,17 +246,13 @@ export function ChatWindow(props: {
 
     const responseMessages: Message[] = json.messages;
 
-    // Represent intermediate steps as system messages for display purposes
-    // TODO: Add proper support for tool messages
-    const toolCallMessages = responseMessages.filter(
-      (responseMessage: Message) => {
-        return (
-          (responseMessage.role === "assistant" &&
-            !!responseMessage.tool_calls?.length) ||
-          responseMessage.role === "tool"
-        );
-      },
-    );
+    const toolCallMessages = responseMessages.filter((responseMessage: Message) => {
+      return (
+        (responseMessage.role === "assistant" &&
+          !!responseMessage.tool_calls?.length) ||
+        responseMessage.role === "tool"
+      );
+    });
 
     const intermediateStepMessages = [];
     for (let i = 0; i < toolCallMessages.length; i += 2) {
@@ -310,7 +306,7 @@ export function ChatWindow(props: {
           onChange={chat.handleInputChange}
           onSubmit={sendMessage}
           loading={chat.isLoading || intermediateStepsLoading}
-          placeholder={props.placeholder ?? "What's it like to be a pirate?"}
+          placeholder={props.placeholder ?? "ما هو شعورك كقرصان؟"} /* Updated placeholder to Arabic */
         >
           {props.showIngestForm && (
             <Dialog>
@@ -321,23 +317,23 @@ export function ChatWindow(props: {
                   disabled={chat.messages.length !== 0}
                 >
                   <Paperclip className="size-4" />
-                  <span>Upload document</span>
+                  <span>رفع ملف</span> {/* Updated text to Arabic */}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Upload document</DialogTitle>
+                  <DialogTitle>رفع ملف</DialogTitle> {/* Updated title to Arabic */}
                   <DialogDescription>
-                    Upload a document to use for the chat.
-                  </DialogDescription>
+                    قم بتحميل ملف لاستخدامه في المحادثة.
+                  </DialogDescription> {/* Updated description to Arabic */}
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <h3 className="font-medium mb-2">Upload a .docx file</h3>
+                    <h3 className="font-medium mb-2">قم بتحميل ملف .docx</h3> {/* Updated text to Arabic */}
                     <FileUploadForm />
                   </div>
                   <div className="mt-4">
-                    <h3 className="font-medium mb-2">Or paste text directly</h3>
+                    <h3 className="font-medium mb-2">أو قم بلصق النص مباشرة</h3> {/* Updated text to Arabic */}
                     <UploadDocumentsForm />
                   </div>
                 </div>
@@ -355,8 +351,8 @@ export function ChatWindow(props: {
                 onCheckedChange={(e) => setShowIntermediateSteps(!!e)}
               />
               <label htmlFor="show_intermediate_steps" className="text-sm">
-                Show intermediate steps
-              </label>
+                عرض الخطوات المتوسطة
+              </label> {/* Updated text to Arabic */}
             </div>
           )}
         </ChatInput>

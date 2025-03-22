@@ -8,18 +8,22 @@ export function IntermediateStep(props: { message: Message }) {
   const action = parsedInput.action;
   const observation = parsedInput.observation;
   const [expanded, setExpanded] = useState(false);
+
   return (
-    <div className="mr-auto bg-secondary border border-input rounded p-3 max-w-[80%] mb-8 whitespace-pre-wrap flex flex-col">
+    <div
+      className="ml-auto bg-secondary border border-input rounded p-3 max-w-[80%] mb-8 whitespace-pre-wrap flex flex-col"
+      dir="rtl" // Ensure RTL layout
+    >
       <button
         type="button"
         className={cn(
-          "text-left flex items-center gap-1",
+          "text-right flex items-center gap-1", // Align text to the right
           expanded && "w-full",
         )}
         onClick={(e) => setExpanded(!expanded)}
       >
         <span>
-          Step: <strong className="font-mono">{action.name}</strong>
+          الخطوة: <strong className="font-mono">{action.name}</strong> {/* Updated text to Arabic */}
         </span>
         <span className={cn(expanded && "hidden")}>
           <ChevronDown className="w-5 h-5" />
@@ -40,7 +44,7 @@ export function IntermediateStep(props: { message: Message }) {
             expanded ? "max-w-full" : "transition-[max-width] delay-100",
           )}
         >
-          Input:{" "}
+          الإدخال:{" "} {/* Updated text to Arabic */}
           <code className="max-h-[100px] overflow-auto">
             {JSON.stringify(action.args)}
           </code>
@@ -51,7 +55,7 @@ export function IntermediateStep(props: { message: Message }) {
             expanded ? "max-w-full" : "transition-[max-width] delay-100",
           )}
         >
-          Output:{" "}
+          الإخراج:{" "} {/* Updated text to Arabic */}
           <code className="max-h-[260px] overflow-auto">{observation}</code>
         </div>
       </div>
