@@ -35,7 +35,7 @@ export default function AuthPage() {
         password,
       });
       if (error) throw error;
-      setError("Check your email for the confirmation link.");
+      setError("تحقق من بريدك الإلكتروني للحصول على رابط التأكيد.");
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -64,29 +64,31 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary">
       <div className="max-w-md w-full p-6 bg-background rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4 text-center">Login / Sign Up</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">تسجيل الدخول / إنشاء حساب</h2>
         <form className="space-y-4" onSubmit={handleSignIn}>
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded">{error}</div>
           )}
           <div>
-            <label className="block text-foreground/80">Email</label>
+            <label className="block text-foreground/80">البريد الإلكتروني</label>
             <input
               type="email"
-              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-primary bg-background"
+              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-primary bg-background text-right"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              dir="rtl"
             />
           </div>
           <div>
-            <label className="block text-foreground/80">Password</label>
+            <label className="block text-foreground/80">كلمة المرور</label>
             <input
               type="password"
-              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-primary bg-background"
+              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-primary bg-background text-right"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              dir="rtl"
             />
           </div>
           <div className="flex gap-4">
@@ -95,7 +97,7 @@ export default function AuthPage() {
               disabled={loading}
               className="w-full bg-primary text-primary-foreground p-2 rounded hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Loading...' : 'Sign In'}
+              {loading ? 'جاري التحميل...' : 'تسجيل الدخول'}
             </button>
             <button
               onClick={handleSignUp}
@@ -103,7 +105,7 @@ export default function AuthPage() {
               disabled={loading}
               className="w-full bg-secondary text-secondary-foreground p-2 rounded hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Loading...' : 'Sign Up'}
+              {loading ? 'جاري التحميل...' : 'إنشاء حساب'}
             </button>
           </div>
         </form>
