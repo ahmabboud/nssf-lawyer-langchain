@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
-
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
@@ -34,19 +33,18 @@ const formatVercelMessages = (chatHistory: VercelChatMessage[]) => {
 };
 
 const CONDENSE_QUESTION_TEMPLATE = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
-
 <chat_history>
   {chat_history}
 </chat_history>
-
 Follow Up Input: {question}
 Standalone question:`;
+
 const condenseQuestionPrompt = PromptTemplate.fromTemplate(
   CONDENSE_QUESTION_TEMPLATE,
 );
 
-const ANSWER_TEMPLATE = `You are an energetic talking puppy named Dana, and must answer all questions like a happy, talking dog would.
-Use lots of puns!
+const ANSWER_TEMPLATE = `You are a professional legal expert specializing in NSSF (National Social Security Fund) laws and regulations. 
+You should provide accurate, helpful, and professional answers based on the legal documents and information in your knowledge base.
 
 Answer the question based only on the following context and chat history:
 <context>
@@ -58,14 +56,17 @@ Answer the question based only on the following context and chat history:
 </chat_history>
 
 Question: {question}
+
+If the answer is not in the context or chat history, politely state that you don't have enough information on this specific topic and recommend they consult with an official NSSF representative or legal advisor for the most accurate advice.
+
+Always maintain a professional and formal tone suitable for legal consultations.
 `;
+
 const answerPrompt = PromptTemplate.fromTemplate(ANSWER_TEMPLATE);
 
 /**
  * This handler initializes and calls a retrieval chain. It composes the chain using
- * LangChain Expression Language. See the docs for more information:
- *
- * https://js.langchain.com/v0.2/docs/how_to/qa_chat_history_how_to/
+ * LangChain Expression Language for an NSSF legal assistant application.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     const model = new ChatOpenAI({
       model: config.openai.model,
-      temperature: config.openai.temperature,
+      temperature: 0.3, // Lower temperature for more factual responses
     });
 
     const client = createServerSupabaseClient();
@@ -86,15 +87,7 @@ export async function POST(req: NextRequest) {
       queryName: "match_documents",
     });
 
-    /**
-     * We use LangChain Expression Language to compose two chains.
-     * To learn more, see the guide here:
-     *
-     * https://js.langchain.com/docs/guides/expression_language/cookbook
-     *
-     * You can also use the "createRetrievalChain" method with a
-     * "historyAwareRetriever" to get something prebaked.
-     */
+    // First chain: Generate a standalone question from the user's input
     const standaloneQuestionChain = RunnableSequence.from([
       condenseQuestionPrompt,
       model,
@@ -106,6 +99,7 @@ export async function POST(req: NextRequest) {
       resolveWithDocuments = resolve;
     });
 
+    // Configure the retriever to fetch relevant documents from Supabase
     const retriever = vectorstore.asRetriever({
       callbacks: [
         {
@@ -114,10 +108,13 @@ export async function POST(req: NextRequest) {
           },
         },
       ],
+      // Increased number of documents for more context
+      k: 5,
     });
 
     const retrievalChain = retriever.pipe(combineDocumentsFn);
 
+    // Final chain: Generate an answer using the retrieved context
     const answerChain = RunnableSequence.from([
       {
         context: RunnableSequence.from([
@@ -131,6 +128,7 @@ export async function POST(req: NextRequest) {
       model,
     ]);
 
+    // Combine the two chains
     const conversationalRetrievalQAChain = RunnableSequence.from([
       {
         question: standaloneQuestionChain,

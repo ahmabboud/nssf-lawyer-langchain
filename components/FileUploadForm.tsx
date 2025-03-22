@@ -1,8 +1,6 @@
 "use client";
-
 import { useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Loader2 } from "lucide-react";
 
@@ -39,7 +37,12 @@ export function FileUploadForm() {
       });
 
       if (response.status === 200) {
-        setMessage("File uploaded and processed successfully!");
+        const data = await response.json();
+        setMessage(data.message || "File uploaded and processed successfully!");
+        setFile(null);
+        // Reset the file input
+        const fileInput = document.getElementById("fileUpload") as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
       } else {
         const json = await response.json();
         if (json.error) {
@@ -60,12 +63,13 @@ export function FileUploadForm() {
     <form onSubmit={ingest} className="flex flex-col gap-4 w-full">
       <div className="flex flex-col gap-2">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Upload a .docx file to be processed and added to the vector store.
+          Upload a document file to be processed and added to the vector store.
         </p>
         <div className="flex items-center gap-2">
           <Input
+            id="fileUpload"
             type="file"
-            accept=".docx"
+            accept=".txt,.docx,.pdf"
             onChange={handleFileChange}
             className="flex-1"
             disabled={isLoading}
@@ -83,7 +87,7 @@ export function FileUploadForm() {
         </div>
       </div>
       {message && (
-        <div className="p-2 text-sm bg-slate-100 dark:bg-slate-800 rounded">
+        <div className="p-3 mt-2 text-sm bg-slate-100 dark:bg-slate-800 rounded">
           {message}
         </div>
       )}
