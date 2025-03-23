@@ -1,5 +1,4 @@
 "use client";
-
 import { ChatInput, ChatLayout } from "@/components/ChatWindow";
 import { GuideInfoBox } from "@/components/guide/GuideInfoBox";
 import { ReactNode, Suspense, useState } from "react";
@@ -10,13 +9,11 @@ import { useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Message } from "@langchain/langgraph-sdk";
-
 const onError = (error: unknown) => {
   toast.error("Failed to handle input", {
     description: error instanceof Error ? error.message : String(error),
   });
 };
-
 function EditMessage({
   message,
   onEdit,
@@ -27,7 +24,6 @@ function EditMessage({
   onCancel: () => void;
 }) {
   const [editValue, setEditValue] = useState(message.content as string);
-
   return (
     <ChatInput
       value={editValue}
@@ -44,7 +40,6 @@ function EditMessage({
     />
   );
 }
-
 function Message(props: {
   message: Message;
   onEdit: (message: Message) => void;
@@ -61,7 +56,6 @@ function Message(props: {
       />
     );
   }
-
   return (
     <div
       className={cn(
@@ -86,7 +80,6 @@ function Message(props: {
               })}
         </div>
       </div>
-
       {props.message.type === "human" && (
         <div className="ml-auto flex justify-end items-center gap-2 mt-2">
           <button
@@ -96,11 +89,9 @@ function Message(props: {
           >
             Edit
           </button>
-
           {props.actions}
         </div>
       )}
-
       {props.message.type === "ai" && (
         <div className="mt-2 flex items-center justify-start gap-2">
           {props.actions}
@@ -114,14 +105,12 @@ function Message(props: {
     </div>
   );
 }
-
 function BranchPicker(props: {
   current: string;
   branches: string[];
   onSelect: (path: string) => void;
 }) {
   const index = props.branches.indexOf(props.current);
-
   return (
     <div className="flex items-center gap-2 text-sm justify-end">
       <button
@@ -135,11 +124,9 @@ function BranchPicker(props: {
       >
         <ChevronLeft className="w-4 h-4 text-muted-foreground" />
       </button>
-
       <span className="text-muted-foreground">
         {index + 1} / {props.branches.length}
       </span>
-
       <button
         type="button"
         className="flex-shrink-0"
@@ -154,14 +141,12 @@ function BranchPicker(props: {
     </div>
   );
 }
-
 function StatefulChatInput(props: {
   loading: boolean;
   onSubmit: (value: string) => void;
   onStop: () => void;
 }) {
   const [input, setInput] = useState("");
-
   return (
     <ChatInput
       loading={props.loading}
@@ -176,19 +161,15 @@ function StatefulChatInput(props: {
     />
   );
 }
-
 function ClientLanggraphPage() {
   const [threadId, setThreadId] = useQueryState("threadId");
-
   const thread = useStream<{ messages?: Message[]; timestamp?: number }>({
     assistantId: "agent",
     apiUrl: "http://localhost:2024",
     threadId,
-
     onThreadId: setThreadId,
     onError,
   });
-
   return (
     <ChatLayout
       content={
@@ -197,7 +178,6 @@ function ClientLanggraphPage() {
             <div className="flex justify-between gap-2 items-center">
               <span>Timestamp: {thread.values.timestamp}</span>
             </div>
-
             <div className="flex justify-between gap-2 items-center">
               <span>Thread ID: {threadId}</span>
               <Button
@@ -208,11 +188,9 @@ function ClientLanggraphPage() {
                 New thread
               </Button>
             </div>
-
             {thread.messages.map((message, index) => {
               const meta = thread.getMessagesMetadata(message, index);
               const checkpoint = meta?.firstSeenState?.parent_checkpoint;
-
               return (
                 <Message
                   key={message.id ?? index}
@@ -234,7 +212,6 @@ function ClientLanggraphPage() {
                 />
               );
             })}
-
             {thread.error ? (
               <div className="text-red-500">{thread.error.toString()}</div>
             ) : null}
@@ -270,7 +247,6 @@ function ClientLanggraphPage() {
     />
   );
 }
-
 export default function LanggraphPage() {
   return (
     <Suspense>
