@@ -1,12 +1,10 @@
 "use client";
-
 import { readStreamableValue } from "ai/rsc";
 import React, { useEffect, useRef, useState } from "react";
-import { executeTool } from "./action";
+import { executeTool } from "@/app/template_pages/ai_sdk/tools/action";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-
 export default function Page() {
   const [input, setInput] = useState("");
   const [data, setData] = useState<Record<string, any>[]>([]);
@@ -15,28 +13,23 @@ export default function Page() {
     wso: false,
     streamEvents: false,
   });
-
   const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [data]);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input) return;
     setIsLoading(true);
     setData([]);
-
     const { streamData } = await executeTool(input, options);
     for await (const item of readStreamableValue(streamData)) {
-      setData((prev) => [...prev, item]);
+      setData((prev) => [...prev, item as Record<string, any>]);
     }
     setIsLoading(false);
   }
-
   return (
     <div className="mx-auto w-full max-w-4xl py-12 flex flex-col stretch gap-3">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">

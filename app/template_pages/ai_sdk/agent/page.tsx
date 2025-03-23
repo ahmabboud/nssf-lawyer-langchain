@@ -1,34 +1,27 @@
 "use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import { readStreamableValue } from "ai/rsc";
 import { runAgent } from "./action";
 import { StreamEvent } from "@langchain/core/tracers/log_stream";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 export default function Page() {
   const [input, setInput] = useState("");
   const [data, setData] = useState<StreamEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [data]);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input) return;
-
     try {
       setIsLoading(true);
       setData([]);
       setInput("");
-
       const { streamData } = await runAgent(input);
       for await (const item of readStreamableValue(streamData)) {
         setData((prev) => [...prev, item]);
@@ -37,7 +30,6 @@ export default function Page() {
       setIsLoading(false);
     }
   }
-
   return (
     <div className="mx-auto w-full max-w-4xl py-12 flex flex-col stretch gap-3">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
@@ -71,7 +63,6 @@ export default function Page() {
           <p className="break-words">{data[0].data.input.input}</p>
         </div>
       )}
-
       {!isLoading && data.length > 1 && (
         <>
           <hr />

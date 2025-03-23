@@ -961,6 +961,115 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@napi-rs/canvas-android-arm64@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-android-arm64@npm:0.1.68"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-darwin-arm64@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-darwin-arm64@npm:0.1.68"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-darwin-x64@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-darwin-x64@npm:0.1.68"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.68"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-arm64-gnu@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-arm64-gnu@npm:0.1.68"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-arm64-musl@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-arm64-musl@npm:0.1.68"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.68"
+  conditions: os=linux & cpu=riscv64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-x64-gnu@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-x64-gnu@npm:0.1.68"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-linux-x64-musl@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-linux-x64-musl@npm:0.1.68"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas-win32-x64-msvc@npm:0.1.68":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas-win32-x64-msvc@npm:0.1.68"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@napi-rs/canvas@npm:^0.1.67":
+  version: 0.1.68
+  resolution: "@napi-rs/canvas@npm:0.1.68"
+  dependencies:
+    "@napi-rs/canvas-android-arm64": 0.1.68
+    "@napi-rs/canvas-darwin-arm64": 0.1.68
+    "@napi-rs/canvas-darwin-x64": 0.1.68
+    "@napi-rs/canvas-linux-arm-gnueabihf": 0.1.68
+    "@napi-rs/canvas-linux-arm64-gnu": 0.1.68
+    "@napi-rs/canvas-linux-arm64-musl": 0.1.68
+    "@napi-rs/canvas-linux-riscv64-gnu": 0.1.68
+    "@napi-rs/canvas-linux-x64-gnu": 0.1.68
+    "@napi-rs/canvas-linux-x64-musl": 0.1.68
+    "@napi-rs/canvas-win32-x64-msvc": 0.1.68
+  dependenciesMeta:
+    "@napi-rs/canvas-android-arm64":
+      optional: true
+    "@napi-rs/canvas-darwin-arm64":
+      optional: true
+    "@napi-rs/canvas-darwin-x64":
+      optional: true
+    "@napi-rs/canvas-linux-arm-gnueabihf":
+      optional: true
+    "@napi-rs/canvas-linux-arm64-gnu":
+      optional: true
+    "@napi-rs/canvas-linux-arm64-musl":
+      optional: true
+    "@napi-rs/canvas-linux-riscv64-gnu":
+      optional: true
+    "@napi-rs/canvas-linux-x64-gnu":
+      optional: true
+    "@napi-rs/canvas-linux-x64-musl":
+      optional: true
+    "@napi-rs/canvas-win32-x64-msvc":
+      optional: true
+  checksum: 77d292e44e3212e4994d71410951e466e7a65da0d1f62f1d7ef153f1d98a8944c290845e8bbb30845469e3c2ad2aa2d90d9ad06de7df9e971d3f1fdbac751a40
+  languageName: node
+  linkType: hard
+
 "@next/bundle-analyzer@npm:^13.4.19":
   version: 13.5.8
   resolution: "@next/bundle-analyzer@npm:13.5.8"
@@ -1463,6 +1572,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-roving-focus@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-roving-focus@npm:1.1.2"
+  dependencies:
+    "@radix-ui/primitive": 1.1.1
+    "@radix-ui/react-collection": 1.1.2
+    "@radix-ui/react-compose-refs": 1.1.1
+    "@radix-ui/react-context": 1.1.1
+    "@radix-ui/react-direction": 1.1.0
+    "@radix-ui/react-id": 1.1.0
+    "@radix-ui/react-primitive": 2.0.2
+    "@radix-ui/react-use-callback-ref": 1.1.0
+    "@radix-ui/react-use-controllable-state": 1.1.0
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 4a57f5af51387ae7621a6d0c7e3c743f16b06afda9311e6e5a39c023157d6a314931170dd794f901b59c0c768f0c3a121b8af59f7f80e58eb87512fb4540b037
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-select@npm:^2.1.6":
   version: 2.1.6
   resolution: "@radix-ui/react-select@npm:2.1.6"
@@ -1514,6 +1650,32 @@ __metadata:
     "@types/react":
       optional: true
   checksum: f341cd66b284061a5147a67f6d7b8a7337a4c076b97ce087bcb1358fa36e9714ef988cc7ea2c2ed3b6ec3f17adafd2460851b31ed8f4dd73ea22b0b11e22ab97
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-tabs@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@radix-ui/react-tabs@npm:1.1.3"
+  dependencies:
+    "@radix-ui/primitive": 1.1.1
+    "@radix-ui/react-context": 1.1.1
+    "@radix-ui/react-direction": 1.1.0
+    "@radix-ui/react-id": 1.1.0
+    "@radix-ui/react-presence": 1.1.2
+    "@radix-ui/react-primitive": 2.0.2
+    "@radix-ui/react-roving-focus": 1.1.2
+    "@radix-ui/react-use-controllable-state": 1.1.0
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: abfba997219743ac75840281df5577f0be154c4813588cb4bb4aac16fc8bd4bcd230170663162a805bb31bdc393adfd2ee942daa3f15484ab4f82aa210e532bb
   languageName: node
   linkType: hard
 
@@ -2836,7 +2998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^3.2.7":
+"debug@npm:^3.1.0, debug@npm:^3.2.7":
   version: 3.2.7
   resolution: "debug@npm:3.2.7"
   dependencies:
@@ -4550,6 +4712,7 @@ __metadata:
     "@radix-ui/react-popover": ^1.1.4
     "@radix-ui/react-select": ^2.1.6
     "@radix-ui/react-slot": ^1.1.1
+    "@radix-ui/react-tabs": ^1.1.3
     "@supabase/supabase-js": ^2.32.0
     "@tailwindcss/postcss": ^4.0.15
     "@types/node": 20.12.12
@@ -4569,6 +4732,8 @@ __metadata:
     next: ^15.1.5
     next-themes: ^0.4.4
     nuqs: ^2.3.2
+    pdf-parse: ^1.1.1
+    pdfjs-dist: ^5.0.375
     postcss: ^8.5.3
     prettier: ^3.4.2
     react: ^18.3.1
@@ -5239,6 +5404,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-ensure@npm:^0.0.0":
+  version: 0.0.0
+  resolution: "node-ensure@npm:0.0.0"
+  checksum: 1124623beb1dec66889794286ec1761ac3bfac42ce93b8652903efa5af14227edce5bafa06c4e0675cdc850360931d7c9413e3b5406150f05b2c9bf5bb3ccce4
+  languageName: node
+  linkType: hard
+
 "node-fetch@npm:^2.6.7":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
@@ -5625,6 +5797,28 @@ __metadata:
   version: 4.0.0
   resolution: "path-type@npm:4.0.0"
   checksum: 5b1e2daa247062061325b8fdbfd1fb56dde0a448fb1455453276ea18c60685bdad23a445dc148cf87bc216be1573357509b7d4060494a6fd768c7efad833ee45
+  languageName: node
+  linkType: hard
+
+"pdf-parse@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "pdf-parse@npm:1.1.1"
+  dependencies:
+    debug: ^3.1.0
+    node-ensure: ^0.0.0
+  checksum: 5d63a8be1b3b8915618b1b76350409513fdd7fe03c77056b2dd7a1c2da28a11e297645e33bb4e953e2c1cd0ae66980f30fd0bed2979877f894347962d9647241
+  languageName: node
+  linkType: hard
+
+"pdfjs-dist@npm:^5.0.375":
+  version: 5.0.375
+  resolution: "pdfjs-dist@npm:5.0.375"
+  dependencies:
+    "@napi-rs/canvas": ^0.1.67
+  dependenciesMeta:
+    "@napi-rs/canvas":
+      optional: true
+  checksum: 374622f6d6edde2e71433742899cffa4258f3bb51d381d74c4d81b44a10adadd09c8eb1681cd7ed6be3ffadb84775d91627c900df488e9544e48dfea5e707be1
   languageName: node
   linkType: hard
 

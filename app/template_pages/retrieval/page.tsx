@@ -84,7 +84,7 @@ export default function AgentsPage() {
   );
   return (
     <ChatWindow
-      endpoint="api/chat/retrieval"
+      endpoint="/api/chat/retrieval"
       emptyStateComponent={InfoCard}
       showIngestForm={true}
       placeholder={

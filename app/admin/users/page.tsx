@@ -1,6 +1,5 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../../../components/ui/button';
 import {
   Select,
@@ -11,56 +10,83 @@ import {
 } from "../../../components/ui/select";
 import { UserData, UserRole, fetchUsers, updateUserRole } from '../../../utils/userManagement';
 import ProtectedRoute from '../../../components/ProtectedRoute';
+import { supabase } from '../../../utils/supabaseClient';
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log('UsersManagementPage mounted');
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
-      console.log('Fetching users...');
       setLoading(true);
+      setError(null);
       const fetchedUsers = await fetchUsers();
-      console.log('Fetched users:', fetchedUsers);
       setUsers(fetchedUsers);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load users';
       console.error('Error loading users:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load users');
+      setError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Set up auth state change listener for token refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed, reloading users...');
+        loadUsers();
+      }
+    });
+
+    // Initial load
+    loadUsers();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadUsers]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     try {
-      console.log('Updating role for user', userId, 'to', newRole);
+      setError(null);
       await updateUserRole(userId, newRole);
       await loadUsers(); // Refresh the list
     } catch (error) {
-      console.error('Error updating role:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update role');
+      const message = error instanceof Error ? error.message : 'Failed to update role';
+      setError(message);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-pulse text-lg">Loading users...</div>
+      </div>
+    );
   }
 
   return (
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">User Management</h1>
-        {users.length === 0 ? (
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+            {error}
+            <Button 
+              onClick={() => loadUsers()}
+              className="ml-4 bg-red-100 hover:bg-red-200 text-red-700"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {users.length === 0 && !error ? (
           <div className="text-gray-500">No users found</div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">

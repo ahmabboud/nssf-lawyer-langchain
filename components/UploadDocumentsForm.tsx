@@ -1,32 +1,51 @@
 "use client";
-
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type Dispatch, type SetStateAction } from "react";
 import DEFAULT_RETRIEVAL_TEXT from "@/data/DefaultRetrievalText";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 
-export function UploadDocumentsForm() {
+interface UploadDocumentsFormProps {
+  onLoadingChange?: Dispatch<SetStateAction<boolean>>;
+  onError?: Dispatch<SetStateAction<string | null>>;
+  disabled?: boolean;
+}
+
+export function UploadDocumentsForm({ onLoadingChange, onError, disabled }: UploadDocumentsFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [document, setDocument] = useState(DEFAULT_RETRIEVAL_TEXT);
 
   const ingest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     setIsLoading(true);
-    const response = await fetch("/api/retrieval/ingest", {
-      method: "POST",
-      body: JSON.stringify({
-        text: document,
-      }),
-    });
-    if (response.status === 200) {
-      setDocument("تم التحميل بنجاح!"); // Updated text to Arabic
-    } else {
-      const json = await response.json();
-      if (json.error) {
-        setDocument(json.error);
+    if (onLoadingChange) onLoadingChange(true);
+    
+    try {
+      const response = await fetch("/api/retrieval/ingest", {
+        method: "POST",
+        body: JSON.stringify({
+          text: document,
+        }),
+      });
+      
+      if (response.status === 200) {
+        setDocument("تم التحميل بنجاح!"); // Updated text to Arabic
+        if (onError) onError(null);
+      } else {
+        const json = await response.json();
+        if (json.error) {
+          setDocument(json.error);
+          if (onError) onError(json.error);
+        }
       }
+    } catch (error) {
+      console.error("Upload error:", error);
+      const errorMessage = "حدث خطأ أثناء التحميل. راجع وحدة التحكم للتفاصيل."; // Updated text to Arabic
+      if (onError) onError(errorMessage);
+    } finally {
+      setIsLoading(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
-    setIsLoading(false);
   };
 
   return (
@@ -35,8 +54,9 @@ export function UploadDocumentsForm() {
         className="grow p-4 rounded bg-transparent min-h-[512px] text-right" // Align text to the right
         value={document}
         onChange={(e) => setDocument(e.target.value)}
+        disabled={isLoading || disabled}
       />
-      <Button type="submit">
+      <Button type="submit" disabled={isLoading || disabled}>
         <div
           role="status"
           className={`${isLoading ? "" : "hidden"} flex justify-center`}

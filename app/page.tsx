@@ -6,47 +6,24 @@ const Home = () => {
   const InfoCard = (
     <GuideInfoBox>
       <ul>
-        {/* Add Arabic content here */}
+        {/* Arabic content */}
         <li className="text-right">
-          🤝
+          👨‍⚖️
           <span className="ml-2">
-            هذا النموذج يعرض وكيل{" "}
-            <a href="https://js.langchain.com/" target="_blank">
-              LangChain.js
-            </a>{" "}
-            و{" "}
-            <a href="https://sdk.vercel.ai/docs" target="_blank">
-              Vercel AI SDK
-            </a>{" "}
-            في مشروع{" "}
-            <a href="https://nextjs.org/" target="_blank">
-              Next.js
-            </a>.
+            مرحباً بك في مساعد قوانين الضمان الاجتماعي. يمكنك طرح أي أسئلة حول قوانين وأنظمة الضمان الاجتماعي.
           </span>
         </li>
         <li className="text-right">
-          🛠️
+          🔍
           <span className="ml-2">
-            الوكيل لديه ذاكرة ويمكنه الوصول إلى محرك بحث وآلة حاسبة.
+            يستخدم هذا المساعد قاعدة معرفية تحتوي على وثائق قانونية للضمان الاجتماعي لتقديم معلومات دقيقة.
           </span>
         </li>
         <li className="text-right">
-          💻
+          💬
           <span className="ml-2">
-            يمكنك العثور على منطق النموذج والرسائل في{" "}
-            <code>app/api/chat/route.ts</code>.
-          </span>
-        </li>
-        <li className="text-right">
-          🦜
-          <span className="ml-2">
-            بشكل افتراضي، يتظاهر الوكيل بأنه ببغاء متحدث، ولكن يمكنك تغيير الرسائل كما تريد!
-          </span>
-        </li>
-        <li className="text-right">
-          👇
-          <span className="ml-2">
-            جرب أن تسأل مثلاً: <code>ما هو الطقس في هونولولو؟</code> في الأسفل!
+            جرب أن تسأل أسئلة مثل: &ldquo;ما هي شروط الأهلية لاستحقاقات الضمان الاجتماعي؟&rdquo; أو
+            &ldquo;اشرح معدلات مساهمات الضمان الاجتماعي&rdquo;
           </span>
         </li>
       </ul>
@@ -57,7 +34,7 @@ const Home = () => {
     <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-8" dir="rtl">
       <div className="w-full max-w-5xl mx-auto">
         <ChatWindow
-          endpoint="api/chat"
+          endpoint="api/chat/retrieval" 
           placeholder="هذه LLM التي ستجيب على استفساراتك بشأن قوانين NSSF"
           emptyStateComponent={InfoCard}
           emoji="🦜" // Add an emoji for the chat window

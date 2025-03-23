@@ -1,5 +1,4 @@
 "use server";
-
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { createStreamableValue } from "ai/rsc";
@@ -7,14 +6,12 @@ import { z } from "zod";
 import { Runnable } from "@langchain/core/runnables";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { JsonOutputKeyToolsParser } from "@langchain/core/output_parsers/openai_tools";
-
 const Weather = z
   .object({
     city: z.string().describe("City to search for weather"),
     state: z.string().describe("State abbreviation to search for weather"),
   })
   .describe("Weather search parameters");
-
 export async function executeTool(
   input: string,
   options?: {
@@ -23,9 +20,7 @@ export async function executeTool(
   },
 ) {
   "use server";
-
   const stream = createStreamableValue();
-
   (async () => {
     const prompt = ChatPromptTemplate.fromMessages([
       [
@@ -34,14 +29,11 @@ export async function executeTool(
       ],
       ["human", "{input}"],
     ]);
-
     const llm = new ChatOpenAI({
       model: "gpt-4o-mini",
       temperature: 0,
     });
-
     let chain: Runnable;
-
     if (options?.wso) {
       chain = prompt.pipe(
         llm.withStructuredOutput(Weather, {
@@ -71,7 +63,6 @@ export async function executeTool(
           }),
         );
     }
-
     if (options?.streamEvents) {
       const streamResult = chain.streamEvents(
         {
@@ -81,7 +72,6 @@ export async function executeTool(
           version: "v2",
         },
       );
-
       for await (const item of streamResult) {
         stream.update(JSON.parse(JSON.stringify(item, null, 2)));
       }
@@ -89,14 +79,11 @@ export async function executeTool(
       const streamResult = await chain.stream({
         input,
       });
-
       for await (const item of streamResult) {
         stream.update(JSON.parse(JSON.stringify(item, null, 2)));
       }
     }
-
     stream.done();
   })();
-
   return { streamData: stream.value };
 }
