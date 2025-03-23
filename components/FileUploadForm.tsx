@@ -18,21 +18,21 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setMessage(`Selected file: ${e.target.files[0].name}`);
+      setMessage(`تم اختيار الملف: ${e.target.files[0].name}`); // Updated text to Arabic
     }
   };
 
   const ingest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
-      setMessage("Please select a file first.");
-      if (onError) onError("Please select a file first.");
+      setMessage("الرجاء اختيار ملف أولاً."); // Updated text to Arabic
+      if (onError) onError("الرجاء اختيار ملف أولاً."); // Added error handling
       return;
     }
 
     setIsLoading(true);
+    setMessage("جاري تحميل ومعالجة الملف..."); // Updated text to Arabic
     if (onLoadingChange) onLoadingChange(true);
-    setMessage("Uploading and processing file...");
 
     try {
       // Create form data for file upload
@@ -44,7 +44,7 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
       });
       if (response.status === 200) {
         const data = await response.json();
-        setMessage(data.message || "File uploaded and processed successfully!");
+        setMessage(data.message || "تم تحميل ومعالجة الملف بنجاح!"); // Updated text to Arabic
         if (onError) onError(null);
         setFile(null);
         // Reset the file input
@@ -52,13 +52,13 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
         if (fileInput) fileInput.value = "";
       } else {
         const json = await response.json();
-        const errorMessage = json.error ? `Error: ${json.error}` : "An unknown error occurred during upload";
+        const errorMessage = json.error ? `خطأ: ${json.error}` : "حدث خطأ غير معروف أثناء التحميل"; // Updated text to Arabic
         setMessage(errorMessage);
         if (onError) onError(errorMessage);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      const errorMessage = "Error uploading file. See console for details.";
+      const errorMessage = "حدث خطأ أثناء تحميل الملف. راجع وحدة التحكم للتفاصيل."; // Updated text to Arabic
       setMessage(errorMessage);
       if (onError) onError(errorMessage);
     } finally {
@@ -68,10 +68,10 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
   };
 
   return (
-    <form onSubmit={ingest} className="flex flex-col gap-4 w-full">
+    <form onSubmit={ingest} className="flex flex-col gap-4 w-full" dir="rtl"> {/* Ensure RTL layout */}
       <div className="flex flex-col gap-2">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Upload a document file to be processed and added to the vector store.
+          قم بتحميل ملف .docx ليتم معالجته وإضافته إلى مخزن البيانات. {/* Updated text to Arabic */}
         </p>
         <div className="flex items-center gap-2">
           <Input
@@ -85,11 +85,11 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
           <Button type="submit" disabled={isLoading || !file || disabled}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" /> {/* Adjusted margin for RTL */}
+                جاري المعالجة {/* Updated text to Arabic */}
               </>
             ) : (
-              "Upload"
+              "تحميل" 
             )}
           </Button>
         </div>

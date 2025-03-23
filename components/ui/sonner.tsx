@@ -10,12 +10,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      className="toaster group rtl"
+      dir="rtl" // Ensure RTL layout
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg px-4 py-3",
-          description: "group-[.toast]:text-muted-foreground -mt-0.5",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg px-4 py-3 text-right", // Align text to the right for RTL
+          description: "group-[.toast]:text-muted-foreground -mt-0.5 text-right", // Align description to the right for RTL
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:

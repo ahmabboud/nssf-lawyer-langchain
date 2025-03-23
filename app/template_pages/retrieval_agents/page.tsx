@@ -72,6 +72,7 @@ export default function AgentsPage() {
   );
 
   return (
+    <div dir="rtl"> {/* Apply RTL direction here */}
     <ChatWindow
       endpoint="/api/chat/retrieval_agents"
       emptyStateComponent={InfoCard}
@@ -82,5 +83,6 @@ export default function AgentsPage() {
       }
       emoji="🤖"
     />
+    </div>
   );
 }

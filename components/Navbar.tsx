@@ -15,8 +15,9 @@ export const ActiveLink = (props: { href: string; children: ReactNode }) => {
       href={props.href}
       className={cn(
         "px-4 py-2 rounded-[18px] whitespace-nowrap flex items-center gap-2 text-sm transition-all",
-        pathname === props.href && "bg-primary text-primary-foreground",
+        pathname === props.href && "bg-primary text-primary-foreground"
       )}
+      dir="rtl" // Ensure RTL layout
     >
       {props.children}
     </Link>
@@ -31,7 +32,9 @@ export const Navbar = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       
       // Check if user has admin role (you would need to implement this based on your user model)
@@ -54,7 +57,7 @@ export const Navbar = () => {
     };
     
     checkAuth();
-    
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session);
       
@@ -90,30 +93,30 @@ export const Navbar = () => {
     try {
       await supabase.auth.signOut();
       // Clear any stored session data
-      window.localStorage.removeItem('supabase.auth.token');
+      window.localStorage.removeItem("supabase.auth.token");
       // Force router navigation
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
   // Don't show navbar on auth page
-  if (pathname === '/auth') {
+  if (pathname === "/auth") {
     return null;
   }
 
   return (
-    <nav className="flex items-center justify-between py-2 px-4">
+    <nav dir="rtl" className="flex items-center justify-between p-4">
       <div className="flex items-center space-x-2">
         <ActiveLink href="/">
-          Home
+          الرئيسية {/* Updated text to Arabic */}
         </ActiveLink>
         
         {isAdmin && (
           <ActiveLink href="/admin/documents">
             <FileTextIcon size={16} />
-            <span>Documents</span>
+            <span>الوثائق</span> {/* Updated text to Arabic */}
           </ActiveLink>
         )}
       </div>
@@ -126,7 +129,7 @@ export const Navbar = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
         >
           <LogOutIcon size={16} />
-          Sign Out
+          تسجيل الخروج {/* Updated text to Arabic */}
         </Button>
       )}
     </nav>

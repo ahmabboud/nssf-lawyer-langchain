@@ -20,5 +20,9 @@ export default function MainContentWrapper({
   }
 
   const isAuthPage = pathname === '/auth';
-  return isAuthPage ? <>{children}</> : <ProtectedRoute>{children}</ProtectedRoute>;
+  return (
+    <div dir="rtl"> {/* Ensure RTL layout */}
+      {isAuthPage ? <>{children}</> : <ProtectedRoute>{children}</ProtectedRoute>}
+    </div>
+  );
 }
