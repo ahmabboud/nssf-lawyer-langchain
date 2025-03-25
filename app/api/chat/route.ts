@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
-
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
+import { Buffer } from 'buffer';
 
 export const runtime = "edge";
+
+// Polyfill Buffer for edge runtime
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = Buffer;
+}
 
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
 };
 
-const TEMPLATE = `You are a lawyer expert in the Lebanses Laws. Your responses should always be formal and in Aarbic language.
+const TEMPLATE = `You are a lawyer expert in Lebanese Laws. Your responses should always be formal and in Arabic language.
 
 Current conversation:
 {chat_history}
@@ -19,55 +24,65 @@ Current conversation:
 User: {input}
 AI:`;
 
-/**
- * This handler initializes and calls a simple chain with a prompt,
- * chat model, and output parser. See the docs for more information:
- *
- * https://js.langchain.com/docs/guides/expression_language/cookbook#prompttemplate--llm--outputparser
- */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
-    const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
-    const currentMessageContent = messages[messages.length - 1].content;
-    const prompt = PromptTemplate.fromTemplate(TEMPLATE);
+    const currentMessageContent = messages[messages.length - 1]?.content || '';
+    const currentMessageIndex = messages.length;
 
-    /**
-     * You can also try e.g.:
-     *
-     * import { ChatAnthropic } from "@langchain/anthropic";
-     * const model = new ChatAnthropic({});
-     *
-     * See a full list of supported models at:
-     * https://js.langchain.com/docs/modules/model_io/models/
-     */
+    const prompt = PromptTemplate.fromTemplate(TEMPLATE);
     const model = new ChatOpenAI({
       temperature: 0.8,
-      model: "gpt-4o-mini",
+      model: "gpt-4-turbo-preview",
     });
 
-    /**
-     * Chat models stream message chunks rather than bytes, so this
-     * output parser handles serialization and byte-encoding.
-     */
     const outputParser = new HttpResponseOutputParser();
-
-    /**
-     * Can also initialize as:
-     *
-     * import { RunnableSequence } from "@langchain/core/runnables";
-     * const chain = RunnableSequence.from([prompt, model, outputParser]);
-     */
     const chain = prompt.pipe(model).pipe(outputParser);
 
+    // For simple messages (like "hi"), always return JSON
+    if (!body.show_intermediate_steps || currentMessageContent.length < 10) {
+      const stream = await chain.stream({
+        chat_history: messages.slice(0, -1).map(formatMessage).join("\n"),
+        input: currentMessageContent,
+      });
+
+      let fullContent = '';
+      for await (const chunk of stream) {
+        fullContent += chunk;
+      }
+
+      return NextResponse.json({
+        messages: [{
+          id: `msg-${currentMessageIndex}-${Date.now()}`,
+          content: fullContent,
+          role: "assistant"
+        }]
+      }, {
+        headers: {
+          'x-sources': Buffer.from(JSON.stringify(["General Response"])).toString('base64'),
+          'x-message-index': currentMessageIndex.toString()
+        }
+      });
+    }
+
+    // Original streaming for complex queries
     const stream = await chain.stream({
-      chat_history: formattedPreviousMessages.join("\n"),
+      chat_history: messages.slice(0, -1).map(formatMessage).join("\n"),
       input: currentMessageContent,
     });
 
-    return new StreamingTextResponse(stream);
+    return new StreamingTextResponse(stream, {
+      headers: {
+        'x-sources': Buffer.from(JSON.stringify(["Streaming Response"])).toString('base64'),
+        'x-message-index': currentMessageIndex.toString()
+      }
+    });
+
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
+    return NextResponse.json(
+      { error: "حدث خطأ: " + e.message },
+      { status: 500 }
+    );
   }
 }

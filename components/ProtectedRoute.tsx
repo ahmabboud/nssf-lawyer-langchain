@@ -24,40 +24,40 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     const checkAuth = async () => {
       try {
-        toast.info('جاري التحقق من الجلسة...'); // Updated text to Arabic
+        toast.info('Checking session...'); // Updated to English
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          toast.error('خطأ في الجلسة: ' + sessionError.message); // Updated text to Arabic
+          toast.error('Session error: ' + sessionError.message); // Updated to English
           throw new Error(sessionError.message);
         }
 
         if (!session) {
-          toast.error('لم يتم العثور على جلسة نشطة'); // Updated text to Arabic
+          toast.error('No active session found'); // Updated to English
           router.replace('/auth');
           return;
         }
 
-        toast.success('تم التحقق من الجلسة بنجاح'); // Updated text to Arabic
+        toast.success('Session verified successfully'); // Updated to English
         if (mounted) setAuthenticated(true);
 
         // Check role-based access for admin routes
         if (pathname?.startsWith('/admin')) {
-          toast.info('جاري التحقق من صلاحيات المدير...'); // Updated text to Arabic
+          toast.info('Verifying admin permissions...'); // Updated to English
           try {
             const userRole = await getUserRole(session.user.id);
-            toast.info(`صلاحية المستخدم الحالي: ${userRole}`); // Updated text to Arabic
+            toast.info(`Current user role: ${userRole}`); // Updated to English
             
             if (userRole !== 'admin') {
-              toast.error('تم الرفض: صلاحيات المدير مطلوبة'); // Updated text to Arabic
+              toast.error('Access denied: Admin permissions required'); // Updated to English
               router.replace('/');
               return;
             }
             if (mounted) setAuthorized(true);
-            toast.success('تم منح صلاحيات المدير'); // Updated text to Arabic
+            toast.success('Admin permissions granted'); // Updated to English
           } catch (roleError) {
-            console.error('خطأ في التحقق من الصلاحية:', roleError); // Updated text to Arabic
-            toast.error('فشل التحقق من صلاحيات المدير'); // Updated text to Arabic
+            console.error('Error verifying permissions:', roleError); // Updated to English
+            toast.error('Failed to verify admin permissions'); // Updated to English
             if (mounted) {
               setAuthorized(false);
               router.replace('/');
@@ -69,8 +69,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           if (mounted) setAuthorized(true);
         }
       } catch (error) {
-        console.error('خطأ في المصادقة:', error); // Updated text to Arabic
-        toast.error('فشل المصادقة'); // Updated text to Arabic
+        console.error('Authentication error:', error); // Updated to English
+        toast.error('Authentication failed'); // Updated to English
         router.replace('/auth');
       } finally {
         setLoading(false);
@@ -78,10 +78,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('تغير حالة المصادقة:', _event); // Updated text to Arabic
+      console.log('Auth state changed:', _event); // Updated to English
       
       if (!session) {
-        toast.error('انتهت الجلسة'); // Updated text to Arabic
+        toast.error('Session expired'); // Updated to English
         router.replace('/auth');
         setAuthenticated(false);
         setAuthorized(false);
@@ -93,15 +93,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             if (mounted) {
               setAuthorized(userRole === 'admin');
               if (userRole !== 'admin') {
-                toast.error('تم الرفض: صلاحيات المدير مطلوبة'); // Updated text to Arabic
+                toast.error('Access denied: Admin permissions required'); // Updated to English
                 router.replace('/');
               } else {
-                toast.success('تم التحقق من صلاحيات المدير'); // Updated text to Arabic
+                toast.success('Admin permissions verified'); // Updated to English
               }
             }
           } catch (error) {
-            console.error('خطأ في التحقق من الصلاحية:', error); // Updated text to Arabic
-            toast.error('فشل التحقق من صلاحيات المدير'); // Updated text to Arabic
+            console.error('Error verifying permissions:', error); // Updated to English
+            toast.error('Failed to verify admin permissions'); // Updated to English
             if (mounted) {
               setAuthorized(false);
               router.replace('/');
@@ -122,7 +122,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, [router, pathname]);
 
   if (loading) {
-    return <div>جاري التحميل...</div>; // Updated text to Arabic
+    return <div>Loading...</div>; // Updated to English
   }
 
   if (!isClient) {

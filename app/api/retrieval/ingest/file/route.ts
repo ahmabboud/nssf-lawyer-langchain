@@ -59,6 +59,7 @@ async function extractDocxContent(buffer: ArrayBuffer): Promise<string> {
  */
 export async function POST(req: NextRequest) {
   if (config.features.demoMode) {
+    console.error("Demo mode is enabled. File ingestion is not supported.");
     return NextResponse.json(
       {
         error: [
@@ -71,15 +72,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    console.log("Starting file ingestion process...");
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
+      console.error("No file provided in the request.");
       return NextResponse.json(
         { error: "No file provided" },
         { status: 400 }
       );
     }
+
+    console.log(`Received file: ${file.name}, size: ${file.size} bytes`);
 
     // Get the file content based on its type
     let fileContent = '';
@@ -125,11 +130,14 @@ export async function POST(req: NextRequest) {
 
     // Ensure the content is not empty after sanitization
     if (!fileContent.trim()) {
+      console.error("Extracted content is empty after sanitization.");
       return NextResponse.json(
         { error: "No valid text content could be extracted from the file" },
         { status: 400 }
       );
     }
+
+    console.log("File content extracted and sanitized successfully.");
 
     // Create Supabase client
     const client = createServerSupabaseClient();
@@ -152,6 +160,7 @@ export async function POST(req: NextRequest) {
       [metadata]
     );
 
+    console.log(`Storing ${docs.length} document chunks in Supabase...`);
     // Store documents in the Supabase vector store
     await SupabaseVectorStore.fromDocuments(
       docs,
@@ -163,6 +172,7 @@ export async function POST(req: NextRequest) {
       },
     );
 
+    console.log(`Successfully stored ${docs.length} chunks from ${file.name}`);
     return NextResponse.json({ 
       success: true,
       message: `Successfully processed and stored ${docs.length} chunks from ${file.name}` 
