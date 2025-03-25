@@ -64,7 +64,6 @@ export function ChatInput(props: {
   actions?: ReactNode;
 }) {
   const disabled = props.loading && props.onStop == null;
-
   return (
     <form
       onSubmit={(e) => {
@@ -78,31 +77,29 @@ export function ChatInput(props: {
         }
       }}
       className={cn("flex w-full flex-col", props.className)}
-      dir="rtl"
+      dir="rtl" // Ensure RTL layout
     >
       <div className="border border-input bg-secondary rounded-lg flex flex-col gap-2 max-w-[768px] w-full mx-auto">
-        {/* Text input aligned to the left */}
         <input
           value={props.value}
           placeholder={props.placeholder}
           onChange={props.onChange}
-          className="border-none outline-none bg-transparent p-4 text-right flex-1" // `flex-1` ensures it takes full width and stays left aligned
+          className="border-none outline-none bg-transparent p-4 text-right" // Align text to the right
         />
 
-        <div className="flex justify-between ml-2 mr-4 mb-2">
-          {/* Children (any additional elements, like upload buttons, etc.) aligned to the left */}
-          <div className="flex gap-3 flex-1">{props.children}</div>
+        <div className="flex justify-between ml-2 mr-4 mb-2"> {/* Adjusted margins for RTL */}
+          <div className="flex gap-3">{props.children}</div>
 
-          <div className="flex gap-2 self-end justify-end"> {/* Align actions to the right */}
+          <div className="flex gap-2 self-end">
             {props.actions}
             <Button type="submit" className="self-end" disabled={disabled}>
               {props.loading ? (
                 <span role="status" className="flex justify-center">
                   <LoaderCircle className="animate-spin" />
-                  <span className="sr-only">جار التحميل...</span>
+                  <span className="sr-only">جاري التحميل...</span>
                 </span>
               ) : (
-                <span>إرسال</span> 
+                <span>إرسال</span> /* Updated button text to Arabic */
               )}
             </Button>
           </div>
@@ -111,7 +108,6 @@ export function ChatInput(props: {
     </form>
   );
 }
-
 
 function ScrollToBottom(props: { className?: string }) {
   const { isAtBottom, scrollToBottom } = useStickToBottomContext();
@@ -124,7 +120,7 @@ function ScrollToBottom(props: { className?: string }) {
       onClick={() => scrollToBottom()}
     >
       <ArrowDown className="w-4 h-4" />
-      <span>Scroll to Bottom</span>
+      <span>انتقل إلى الأسفل</span> {/* Updated text to Arabic */}
     </Button>
   );
 }
@@ -142,7 +138,7 @@ function StickyToBottomContent(props: {
       ref={context.scrollRef}
       style={{ width: "100%", height: "100%" }}
       className={cn("grid grid-rows-[1fr,auto]", props.className)}
-      dir="rtl"
+      dir="rtl" // Ensure RTL layout
     >
       <div ref={context.contentRef} className={props.contentClassName}>
         {props.content}
@@ -192,26 +188,22 @@ export function ChatWindow(props: {
   const chat = useChat({
     api: props.endpoint,
     onResponse(response) {
-      try {
-        const sourcesHeader = response.headers.get("x-sources");
-        const sources = sourcesHeader
-          ? JSON.parse(Buffer.from(sourcesHeader, "base64").toString("utf8"))
-          : [];
+      const sourcesHeader = response.headers.get("x-sources");
+      const sources = sourcesHeader
+        ? JSON.parse(Buffer.from(sourcesHeader, "base64").toString("utf8"))
+        : [];
 
-        const messageIndexHeader = response.headers.get("x-message-index");
-        if (sources.length && messageIndexHeader !== null) {
-          setSourcesForMessages({
-            ...sourcesForMessages,
-            [messageIndexHeader]: sources,
-          });
-        }
-      } catch (e) {
-        console.error("Error parsing sources header:", e);
+      const messageIndexHeader = response.headers.get("x-message-index");
+      if (sources.length && messageIndexHeader !== null) {
+        setSourcesForMessages({
+          ...sourcesForMessages,
+          [messageIndexHeader]: sources,
+        });
       }
     },
     streamMode: "text",
     onError: (e) =>
-      toast.error("An error occurred while processing your request", {
+      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
         description: e.message,
       }),
   });
@@ -219,84 +211,79 @@ export function ChatWindow(props: {
   async function sendMessage(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (chat.isLoading || intermediateStepsLoading) return;
-  
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-  
-    try {
-      setIntermediateStepsLoading(showIntermediateSteps);
-      chat.setInput("");
-      
-      const messagesWithUserReply = chat.messages.concat({
-        id: Date.now().toString(),
-        content: chat.input,
-        role: "user",
-      });
-  
-      const response = await fetch(props.endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          messages: messagesWithUserReply,
-          show_intermediate_steps: showIntermediateSteps,
-          force_json: true,
-        }),
-        signal: controller.signal,
-      });
-  
-      clearTimeout(timeoutId);
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error: ${response.status} - ${errorText}`);
-      }
-  
-      const json = await response.json();
-      if (!json.messages) {
-        throw new Error("Invalid response format: Missing 'messages' field");
-      }
-  
-      const responseMessages: Message[] = json.messages;
-  
-      // Handle intermediate steps
-      if (showIntermediateSteps) {
-        const systemMessages = responseMessages.filter((m) => m.role === "system");
-        const assistantMessage = responseMessages.find((m) => m.role === "assistant");
-  
-        const newMessages = [...messagesWithUserReply];
-        for (const message of systemMessages) {
-          newMessages.push(message);
-          chat.setMessages([...newMessages]);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-  
-        if (assistantMessage) {
-          chat.setMessages([...newMessages, assistantMessage]);
-        }
-        return;
-      }
-  
-      // Handle normal message
-      if (responseMessages.length > 0) {
-        chat.setMessages([...messagesWithUserReply, ...responseMessages]);
-      }
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof Error) {
-        toast.error(
-          error.name === "AbortError"
-            ? "Request timed out"
-            : error.message || "Request failed"
-        );
-      } else {
-        toast.error("An unknown error occurred");
-      }
-    } finally {
-      setIntermediateStepsLoading(false);
+
+    if (!showIntermediateSteps) {
+      chat.handleSubmit(e);
+      return;
     }
+
+    setIntermediateStepsLoading(true);
+
+    chat.setInput("");
+    const messagesWithUserReply = chat.messages.concat({
+      id: chat.messages.length.toString(),
+      content: chat.input,
+      role: "user",
+    });
+    chat.setMessages(messagesWithUserReply);
+
+    const response = await fetch(props.endpoint, {
+      method: "POST",
+      body: JSON.stringify({
+        messages: messagesWithUserReply,
+        show_intermediate_steps: true,
+      }),
+    });
+    const json = await response.json();
+    setIntermediateStepsLoading(false);
+
+    if (!response.ok) {
+      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
+        description: json.error,
+      });
+      return;
+    }
+
+    const responseMessages: Message[] = json.messages;
+
+    const toolCallMessages = responseMessages.filter((responseMessage: Message) => {
+      return (
+        (responseMessage.role === "assistant" &&
+          !!responseMessage.tool_calls?.length) ||
+        responseMessage.role === "tool"
+      );
+    });
+
+    const intermediateStepMessages = [];
+    for (let i = 0; i < toolCallMessages.length; i += 2) {
+      const aiMessage = toolCallMessages[i];
+      const toolMessage = toolCallMessages[i + 1];
+      intermediateStepMessages.push({
+        id: (messagesWithUserReply.length + i / 2).toString(),
+        role: "system" as const,
+        content: JSON.stringify({
+          action: aiMessage.tool_calls?.[0],
+          observation: toolMessage.content,
+        }),
+      });
+    }
+    const newMessages = messagesWithUserReply;
+    for (const message of intermediateStepMessages) {
+      newMessages.push(message);
+      chat.setMessages([...newMessages]);
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 + Math.random() * 1000),
+      );
+    }
+
+    chat.setMessages([
+      ...newMessages,
+      {
+        id: newMessages.length.toString(),
+        content: responseMessages[responseMessages.length - 1].content,
+        role: "assistant",
+      },
+    ]);
   }
 
   return (
@@ -319,26 +306,34 @@ export function ChatWindow(props: {
           onChange={chat.handleInputChange}
           onSubmit={sendMessage}
           loading={chat.isLoading || intermediateStepsLoading}
-          placeholder={props.placeholder ?? "How do you feel as a pirate?"}
+          placeholder={props.placeholder ?? "ما هو شعورك كقرصان؟"} /* Updated placeholder to Arabic */
         >
           {props.showIngestForm && (
             <Dialog>
               <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="pl-2 pr-3 -ml-2"
+                  disabled={chat.messages.length !== 0}
+                >
+                  <Paperclip className="size-4" />
+                  <span>رفع ملف</span> {/* Updated text to Arabic */}
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Upload File</DialogTitle>
+                  <DialogTitle>رفع ملف</DialogTitle> {/* Updated title to Arabic */}
                   <DialogDescription>
-                    Upload a file to use in the conversation.
-                  </DialogDescription>
+                    قم بتحميل ملف لاستخدامه في المحادثة.
+                  </DialogDescription> {/* Updated description to Arabic */}
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <h3 className="font-medium mb-2">Upload a .docx file</h3>
+                    <h3 className="font-medium mb-2">قم بتحميل ملف .docx</h3> {/* Updated text to Arabic */}
                     <FileUploadForm />
                   </div>
                   <div className="mt-4">
-                    <h3 className="font-medium mb-2">Or paste text directly</h3>
+                    <h3 className="font-medium mb-2">أو قم بلصق النص مباشرة</h3> {/* Updated text to Arabic */}
                     <UploadDocumentsForm />
                   </div>
                 </div>
@@ -357,7 +352,7 @@ export function ChatWindow(props: {
               />
               <label htmlFor="show_intermediate_steps" className="text-sm">
                 عرض الخطوات المتوسطة
-              </label>
+              </label> {/* Updated text to Arabic */}
             </div>
           )}
         </ChatInput>
