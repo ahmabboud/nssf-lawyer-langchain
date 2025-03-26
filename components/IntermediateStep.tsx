@@ -4,10 +4,24 @@ import { cn } from "@/utils/cn";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export function IntermediateStep(props: { message: Message }) {
-  const parsedInput = JSON.parse(props.message.content);
-  const action = parsedInput.action;
-  const observation = parsedInput.observation;
+  // Add error handling for JSON parsing
+  let action = null;
+  let observation = null;
+  
+  try {
+    const parsedInput = JSON.parse(props.message.content);
+    action = parsedInput.action;
+    observation = parsedInput.observation;
+  } catch (error) {
+    // If parsing fails, just display the content as observation
+    action = { name: "Response" };
+    observation = props.message.content;
+  }
+  
   const [expanded, setExpanded] = useState(false);
+
+  // If parsing failed and we couldn't extract valid action data, return null
+  if (!action) return null;
 
   return (
     <div
@@ -46,7 +60,7 @@ export function IntermediateStep(props: { message: Message }) {
         >
           الإدخال:{" "} {/* Updated text to Arabic */}
           <code className="max-h-[100px] overflow-auto">
-            {JSON.stringify(action.args)}
+            {action.args ? JSON.stringify(action.args) : "N/A"}
           </code>
         </div>
         <div

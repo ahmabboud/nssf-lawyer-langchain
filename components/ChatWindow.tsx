@@ -34,8 +34,24 @@ function ChatMessages(props: {
   return (
     <div className="flex flex-col max-w-[768px] mx-auto pb-12 w-full" dir="rtl">
       {props.messages.map((m, i) => {
+        // Only render as IntermediateStep if it's a system message AND looks like JSON
+        // This prevents errors when regular text messages are incorrectly marked as system
         if (m.role === "system") {
-          return <IntermediateStep key={m.id} message={m} />;
+          try {
+            // Just test if it's valid JSON before passing to IntermediateStep
+            JSON.parse(m.content);
+            return <IntermediateStep key={m.id} message={m} />;
+          } catch (error) {
+            // If not valid JSON, render as a regular message
+            return (
+              <ChatMessageBubble
+                key={m.id}
+                message={{...m, role: "assistant"}}
+                aiEmoji={props.aiEmoji}
+                sources={[]}
+              />
+            );
+          }
         }
 
         const sourceKey = (props.messages.length - 1 - i).toString();
@@ -212,78 +228,179 @@ export function ChatWindow(props: {
     e.preventDefault();
     if (chat.isLoading || intermediateStepsLoading) return;
 
+    // Handle normal chat flow without intermediate steps
     if (!showIntermediateSteps) {
       chat.handleSubmit(e);
       return;
     }
 
+    // Handle flow with intermediate steps enabled
     setIntermediateStepsLoading(true);
 
+    // Store the user message
+    const userInput = chat.input;
     chat.setInput("");
     const messagesWithUserReply = chat.messages.concat({
       id: chat.messages.length.toString(),
-      content: chat.input,
+      content: userInput,
       role: "user",
     });
     chat.setMessages(messagesWithUserReply);
 
-    const response = await fetch(props.endpoint, {
-      method: "POST",
-      body: JSON.stringify({
-        messages: messagesWithUserReply,
-        show_intermediate_steps: true,
-      }),
-    });
-    const json = await response.json();
-    setIntermediateStepsLoading(false);
-
-    if (!response.ok) {
-      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
-        description: json.error,
-      });
-      return;
-    }
-
-    const responseMessages: Message[] = json.messages;
-
-    const toolCallMessages = responseMessages.filter((responseMessage: Message) => {
-      return (
-        (responseMessage.role === "assistant" &&
-          !!responseMessage.tool_calls?.length) ||
-        responseMessage.role === "tool"
-      );
-    });
-
-    const intermediateStepMessages = [];
-    for (let i = 0; i < toolCallMessages.length; i += 2) {
-      const aiMessage = toolCallMessages[i];
-      const toolMessage = toolCallMessages[i + 1];
-      intermediateStepMessages.push({
-        id: (messagesWithUserReply.length + i / 2).toString(),
-        role: "system" as const,
-        content: JSON.stringify({
-          action: aiMessage.tool_calls?.[0],
-          observation: toolMessage.content,
+    try {
+      // First try normal API mode to see if it works
+      const normalResponse = await fetch(props.endpoint, {
+        method: "POST",
+        body: JSON.stringify({
+          messages: messagesWithUserReply,
         }),
       });
-    }
-    const newMessages = messagesWithUserReply;
-    for (const message of intermediateStepMessages) {
-      newMessages.push(message);
-      chat.setMessages([...newMessages]);
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1000 + Math.random() * 1000),
-      );
-    }
 
-    chat.setMessages([
-      ...newMessages,
-      {
-        id: newMessages.length.toString(),
-        content: responseMessages[responseMessages.length - 1].content,
-        role: "assistant",
-      },
-    ]);
+      // If we get a successful response with normal mode, use that
+      if (normalResponse.ok) {
+        // Get the content from the streaming response
+        const reader = normalResponse.body?.getReader();
+        const decoder = new TextDecoder();
+        let content = '';
+        
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            content += decoder.decode(value, { stream: true });
+          }
+        }
+        
+        // Add as assistant message directly - no parsing needed
+        chat.setMessages([
+          ...messagesWithUserReply,
+          {
+            id: messagesWithUserReply.length.toString(),
+            content: content,
+            role: "assistant",
+          },
+        ]);
+        setIntermediateStepsLoading(false);
+        return;
+      }
+
+      // If normal mode doesn't work, fall back to intermediate steps mode
+      const response = await fetch(props.endpoint, {
+        method: "POST",
+        body: JSON.stringify({
+          messages: messagesWithUserReply,
+          show_intermediate_steps: true,
+        }),
+      });
+
+      const json = await response.json();
+      
+      if (!response.ok) {
+        toast.error(`حدث خطأ أثناء معالجة طلبك`, {
+          description: json.error,
+        });
+        setIntermediateStepsLoading(false);
+        return;
+      }
+
+      // Get response messages
+      const responseMessages: Message[] = json.messages || [];
+      
+      // If there are no messages, end loading state and return
+      if (!responseMessages || responseMessages.length === 0) {
+        setIntermediateStepsLoading(false);
+        return;
+      }
+      
+      // If we have regular message responses without tool calls
+      if (!responseMessages.some(msg => 
+        (msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0) || 
+        msg.role === "tool")) {
+        
+        // Just add the final assistant message
+        if (responseMessages.length > 0) {
+          const finalMessage = responseMessages[responseMessages.length - 1];
+          chat.setMessages([
+            ...messagesWithUserReply,
+            {
+              id: messagesWithUserReply.length.toString(),
+              content: finalMessage.content,
+              role: "assistant",
+            },
+          ]);
+        }
+        setIntermediateStepsLoading(false);
+        return;
+      }
+
+      // Handle tool-based messages with intermediate steps
+      const toolCallMessages = responseMessages.filter((responseMessage: Message) => {
+        return (
+          (responseMessage.role === "assistant" && 
+           responseMessage.tool_calls && 
+           responseMessage.tool_calls.length > 0) ||
+          responseMessage.role === "tool"
+        );
+      });
+
+      // Process intermediate steps
+      const intermediateStepMessages = [];
+      for (let i = 0; i < toolCallMessages.length; i += 2) {
+        const aiMessage = toolCallMessages[i];
+        const toolMessage = toolCallMessages[i + 1];
+        
+        if (aiMessage && toolMessage) {
+          try {
+            intermediateStepMessages.push({
+              id: (messagesWithUserReply.length + i / 2).toString(),
+              role: "system" as const,
+              content: JSON.stringify({
+                action: aiMessage.tool_calls?.[0],
+                observation: toolMessage.content,
+              }),
+            });
+          } catch (error) {
+            console.error("Error processing intermediate step:", error);
+          }
+        }
+      }
+
+      // Add intermediate step messages with animation delay
+      const newMessages = [...messagesWithUserReply];
+      for (const message of intermediateStepMessages) {
+        newMessages.push(message);
+        chat.setMessages([...newMessages]);
+        await new Promise((resolve) =>
+          setTimeout(resolve, 500 + Math.random() * 500),
+        );
+      }
+
+      // Find the final assistant message (without tool calls)
+      const finalAssistantMessage = responseMessages.find(
+        msg => msg.role === "assistant" && 
+              (!msg.tool_calls || msg.tool_calls.length === 0) && 
+              msg.content
+      );
+      
+      // Add the final message if it exists
+      if (finalAssistantMessage && finalAssistantMessage.content) {
+        chat.setMessages([
+          ...newMessages,
+          {
+            id: newMessages.length.toString(),
+            content: finalAssistantMessage.content,
+            role: "assistant",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error in chat processing:", error);
+      toast.error(`حدث خطأ أثناء معالجة طلبك`, {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setIntermediateStepsLoading(false);
+    }
   }
 
   return (
