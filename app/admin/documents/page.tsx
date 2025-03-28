@@ -102,7 +102,7 @@ export default function AdminDocumentsPage() {
                     <Label htmlFor="splitter-term">Split on Term</Label>
                     <Input
                       id="splitter-term"
-                      placeholder="Enter text to split on (e.g. \n\n for paragraphs)"
+                      placeholder="Enter text to split on (e.g. &quot;\n\n&quot; for paragraphs)"
                       value={splitterTerm}
                       onChange={(e) => setSplitterTerm(e.target.value)}
                       disabled={chunkingMethod !== "splitter" || isLoading}
