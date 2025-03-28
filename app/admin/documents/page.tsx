@@ -109,7 +109,7 @@ export default function AdminDocumentsPage() {
                       className="max-w-md"
                     />
                     <p className="text-sm text-slate-500">
-                      Common examples: "\n\n" for paragraphs, "\n" for lines, "." for sentences
+                      Common examples: &quot;\n\n&quot; for paragraphs, &quot;\n&quot; for lines, &quot;.&quot; for sentences
                     </p>
                   </div>
                 </div>
