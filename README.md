@@ -130,3 +130,39 @@ Check out the [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 Thanks for reading! If you have any questions or comments, reach out to us on Twitter
 [@LangChainAI](https://twitter.com/langchainai), or [click here to join our Discord server](https://discord.gg/langchain).
+
+## 🛠 Development Workflow
+
+This project follows a branch-based development workflow. All feature development happens on individual feature branches that are derived from and merged back into the `development` branch. The `development` branch is then merged into `production` for releases.
+
+### Branch Management Guidelines
+
+1. **Creating a new feature branch**:
+   ```bash
+   git checkout development
+   git pull origin development
+   git checkout -b your-branch-name
+   ```
+
+2. **Keeping your branch up-to-date** (do this regularly and always before submitting a PR):
+   ```bash
+   # First commit or stash your changes
+   git fetch origin development
+   git merge origin/development
+   
+   # Resolve any conflicts if they occur
+   # Test that everything still works after the merge
+   ```
+
+3. **Before submitting a Pull Request**:
+   - Make sure your branch is up-to-date with development (follow step 2)
+   - Test your changes thoroughly
+   - Review your code for quality and standards compliance
+   - Ensure all tests pass
+
+4. **Submit Pull Request**:
+   - Create a PR from your feature branch to the `development` branch
+   - Include a detailed description of the changes
+   - Reference the issue number if applicable
+
+Following these guidelines will help maintain a clean git history and minimize merge conflicts when integrating your changes.
