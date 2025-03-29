@@ -1,5 +1,6 @@
 import { cn } from "@/utils/cn";
 import type { Message } from "ai/react";
+import ReactMarkdown from "react-markdown";
 
 export function ChatMessageBubble(props: {
   message: Message;
@@ -23,7 +24,21 @@ export function ChatMessageBubble(props: {
       )}
 
       <div className="whitespace-pre-wrap flex flex-col">
-        <span>{props.message.content}</span>
+        <ReactMarkdown
+          components={{
+            h1: ({ node, ...props }) => (
+              <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
+            ),
+            h2: ({ node, ...props }) => (
+              <h2 className="text-xl font-semibold mt-3 mb-2" {...props} />
+            ),
+            strong: ({ node, ...props }) => (
+              <strong className="font-bold" {...props} />
+            ),
+          }}
+        >
+          {props.message.content}
+        </ReactMarkdown>
 
         {props.sources && props.sources.length ? (
           <>
