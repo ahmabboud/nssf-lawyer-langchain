@@ -60,6 +60,8 @@ Question: {question}
 If the answer is not in the context or chat history, politely state that you don't have enough information on this specific topic and recommend they consult with an official NSSF representative or legal advisor for the most accurate advice.
 
 Always maintain a professional and formal tone suitable for legal consultations.
+
+Include citations in the format [1], [2], etc. corresponding to the relevant documents from the context. Only cite documents that were actually used in formulating the answer.
 `;
 
 const answerPrompt = PromptTemplate.fromTemplate(ANSWER_TEMPLATE);
