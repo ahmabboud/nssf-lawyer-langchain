@@ -24,6 +24,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     let mounted = true;
 
     const checkAuth = async () => {
@@ -137,7 +142,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [router, pathname]);
+  }, [router, pathname, isClient]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">
