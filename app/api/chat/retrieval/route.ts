@@ -60,6 +60,14 @@ Question: {question}
 If the answer is not in the context or chat history, politely state that you don't have enough information on this specific topic and recommend they consult with an official NSSF representative or legal advisor for the most accurate advice.
 
 Always maintain a professional and formal tone suitable for legal consultations.
+
+Format your responses using Markdown with the following structure:
+# Document Title (use H1 for main titles)
+## Section Header (use H2 for sections)
+**Important terms** should be bolded.
+
+Provide clear, structured answers with appropriate headers.
+
 `;
 
 const answerPrompt = PromptTemplate.fromTemplate(ANSWER_TEMPLATE);
