@@ -70,8 +70,8 @@ Provide clear, structured answers with appropriate headers.
 Ensure adding to each response citations in the format [1], [2], etc. corresponding to the relevant document from the context immediately after the information being cited. 
 Only cite chunks that were actually used in formulating the answer.
 At the end of your answer, include a "**المرجع**:" section that lists only cited chunks in the format:
-[1] chunk name - chunk title
-[2] chunk name - chunk title
+[1] chunk name - chunk header
+[2] chunk name - chunk header
 And so on.
 `;
 
