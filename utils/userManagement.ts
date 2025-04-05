@@ -107,25 +107,10 @@ export async function updateUserRole(userId: string, role: UserRole) {
   }
 }
 
-export async function getUserRole(userId: string): Promise<UserRole> {
-  try {
-    // Execute the query directly without Promise.resolve() wrapper
-    const { data, error } = await withTimeout(
-      supabase
-        .from('user_management_view')
-        .select('role')
-        .eq('id', userId)
-        .single(),
-      TIMEOUT_MS
-    );
-
-    if (error) {
-      throw new Error(`Failed to get user role: ${error.message}`);
-    }
-    
-    return (data?.role as UserRole) || 'free';
-  } catch (error) {
-    // Default to free access level if we can't determine the role
-    return 'free';
+export async function getUserRole(userId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('get_user_role', { user_uuid: userId });
+  if (error || !data) {
+    throw error || new Error('Failed to retrieve user role');
   }
+  return data; // or return data.role if using a view
 }

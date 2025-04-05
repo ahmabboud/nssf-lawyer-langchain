@@ -33,8 +33,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     const checkAuth = async () => {
       try {
-        // Removed toast.info for checking session
+        console.log('Checking Supabase session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('Session retrieved:', session);
         
         if (sessionError) {
           console.error('Session error:', sessionError.message);
@@ -57,6 +58,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
         // Check role-based access for admin routes
         if (pathname?.startsWith('/admin')) {
+          console.log('Admin route requested:', pathname);
           try {
             // Check cache first
             const userId = session.user.id;
@@ -75,12 +77,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             }
             
             // No cache or expired, get from DB with timeout
+            console.log('Attempting role check for user:', userId);
             const userRole = await Promise.race([
               getUserRole(session.user.id),
               new Promise<string>((_, reject) => 
                 setTimeout(() => reject(new Error('Role check timed out')), 5000)
               )
             ]);
+            console.log('Fetched userRole:', userRole);
             
             // Update cache
             userRoleCache.set(userId, {
@@ -95,12 +99,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
               }
             }
           } catch (roleError) {
-            console.error('Role check error:', roleError);
+            console.error('Role check error or timeout:', roleError);
             toast.error('Failed to verify admin access');
             if (mounted) {
               setAuthorized(false);
               router.replace('/');
             }
+            if (mounted) setLoading(false);
             return;
           }
         } else {
