@@ -166,25 +166,29 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
 export async function getUserRole(userId: string): Promise<UserRole> {
   try {
-    toast.info('Checking user role...');
-    const { data, error } = await supabase
+    // Minimize toast notifications to avoid UI freezes
+    console.log('Checking user role...');
+    
+    const queryPromise = supabase
       .from('user_management_view')
       .select('role')
       .eq('id', userId)
       .single();
+    
+    // Apply timeout to prevent indefinite waiting
+    const { data, error } = await withTimeout(queryPromise, TIMEOUT_MS);
 
     if (error) {
       console.error('Get role error:', error);
-      toast.error(`Failed to get user role: ${error.message}`);
       throw new Error(`Failed to get user role: ${error.message}`);
     }
     
     const role = (data?.role as UserRole) || 'free';
-    toast.success(`User role: ${role}`);
+    console.log(`User role: ${role}`);
     return role;
   } catch (error) {
     console.error('getUserRole error:', error);
-    toast.error('Failed to verify user role, defaulting to free');
+    // Don't show error toast here since ProtectedRoute will handle it
     return 'free';
   }
 }

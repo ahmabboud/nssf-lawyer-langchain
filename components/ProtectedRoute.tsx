@@ -10,6 +10,10 @@ interface ProtectedRouteProps {
   children: ReactNode;
 }
 
+// Cache for role checks to minimize DB queries
+const userRoleCache = new Map<string, {role: string, timestamp: number}>();
+const ROLE_CACHE_TTL = 60000; // 1 minute TTL
+
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [authorized, setAuthorized] = useState(false);
@@ -24,37 +28,67 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     const checkAuth = async () => {
       try {
-        toast.info('Checking session...');
+        // Removed toast.info for checking session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          toast.error('Session error: ' + sessionError.message);
-          throw new Error(sessionError.message);
-        }
-
-        if (!session) {
-          toast.error('No active session found');
-          router.replace('/auth');
+          console.error('Session error:', sessionError.message);
+          if (mounted) {
+            setAuthenticated(false);
+            router.replace('/auth');
+          }
           return;
         }
 
-        toast.success('Session verified');
+        if (!session) {
+          if (mounted) {
+            setAuthenticated(false);
+            router.replace('/auth');
+          }
+          return;
+        }
+
         if (mounted) setAuthenticated(true);
 
         // Check role-based access for admin routes
         if (pathname?.startsWith('/admin')) {
-          toast.info('Checking admin permissions...');
           try {
-            const userRole = await getUserRole(session.user.id);
-            toast.info(`Current user role: ${userRole}`);
+            // Check cache first
+            const userId = session.user.id;
+            const cachedRole = userRoleCache.get(userId);
             
-            if (userRole !== 'admin') {
-              toast.error('Access denied: Admin privileges required');
-              router.replace('/');
+            if (cachedRole && (Date.now() - cachedRole.timestamp < ROLE_CACHE_TTL)) {
+              // Use cached role if it's recent
+              if (mounted) {
+                setAuthorized(cachedRole.role === 'admin');
+                setLoading(false);
+                if (cachedRole.role !== 'admin') {
+                  router.replace('/');
+                }
+              }
               return;
             }
-            if (mounted) setAuthorized(true);
-            toast.success('Admin access granted');
+            
+            // No cache or expired, get from DB with timeout
+            const userRole = await Promise.race([
+              getUserRole(session.user.id),
+              new Promise<string>((_, reject) => 
+                setTimeout(() => reject(new Error('Role check timed out')), 5000)
+              )
+            ]);
+            
+            // Update cache
+            userRoleCache.set(userId, {
+              role: userRole, 
+              timestamp: Date.now()
+            });
+            
+            if (mounted) {
+              setAuthorized(userRole === 'admin');
+              if (userRole !== 'admin') {
+                router.replace('/');
+              }
+            }
           } catch (roleError) {
             console.error('Role check error:', roleError);
             toast.error('Failed to verify admin access');
@@ -73,7 +107,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         toast.error('Authentication failed');
         router.replace('/auth');
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
@@ -81,35 +115,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       console.log('Auth state changed:', _event);
       
       if (!session) {
-        toast.error('Session ended');
-        router.replace('/auth');
-        setAuthenticated(false);
-        setAuthorized(false);
-      } else {
-        setAuthenticated(true);
-        if (pathname?.startsWith('/admin')) {
-          try {
-            const userRole = await getUserRole(session.user.id);
-            if (mounted) {
-              setAuthorized(userRole === 'admin');
-              if (userRole !== 'admin') {
-                toast.error('Access denied: Admin privileges required');
-                router.replace('/');
-              } else {
-                toast.success('Admin access verified');
-              }
-            }
-          } catch (error) {
-            console.error('Role verification error:', error);
-            toast.error('Failed to verify admin access');
-            if (mounted) {
-              setAuthorized(false);
-              router.replace('/');
-            }
-          }
-        } else {
-          // Non-admin routes are authorized for authenticated users
-          if (mounted) setAuthorized(true);
+        // Only show error toast for explicit sign out events
+        if (_event === 'SIGNED_OUT') {
+          toast.error('Session ended');
+        }
+        if (mounted) {
+          setAuthenticated(false);
+          setAuthorized(false);
+          router.replace('/auth');
+        }
+      } else if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
+        // Don't do full re-auth checks on token refresh, just update the session state
+        if (mounted) {
+          setAuthenticated(true);
+          // For admin routes, we'll recheck authorization later in checkAuth
         }
       }
     });
@@ -122,7 +141,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, [router, pathname]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-pulse text-lg">Loading authentication...</div>
+    </div>;
   }
 
   if (!isClient) {
