@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
-import { PostgrestResponse } from '@supabase/supabase-js';
+import { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'pro' | 'free';
 
@@ -20,10 +20,11 @@ interface DbUser {
 
 const TIMEOUT_MS = 5000; // 5 second timeout
 
-const withTimeout = <T>(promise: Promise<PostgrestResponse<T>>, timeoutMs: number): Promise<PostgrestResponse<T>> => {
+// Updated withTimeout function to handle both promise types
+const withTimeout = <T>(promise: any, timeoutMs: number): Promise<any> => {
   return Promise.race([
     promise,
-    new Promise<PostgrestResponse<T>>((_, reject) => 
+    new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
     )
   ]);
@@ -31,18 +32,15 @@ const withTimeout = <T>(promise: Promise<PostgrestResponse<T>>, timeoutMs: numbe
 
 export async function fetchUsers(): Promise<UserData[]> {
   try {
-    toast.info('Fetching users from database...');
+    toast.info('Fetching users...');
     const { data: users, error } = await withTimeout<DbUser>(
-      Promise.resolve(
-        supabase
-          .from('user_management_view')
-          .select('*')
-      ),
+      supabase
+        .from('user_management_view')
+        .select('*'),
       TIMEOUT_MS
     );
 
     if (error) {
-      console.error('Failed to fetch users:', error);
       toast.error(`Failed to fetch users: ${error.message}`);
       throw new Error(`Failed to fetch users: ${error.message}`);
     }
@@ -53,32 +51,20 @@ export async function fetchUsers(): Promise<UserData[]> {
       role: user.role || 'free',
       created_at: user.created_at
     }));
-    toast.success(`Successfully fetched ${mappedUsers.length} users`);
+    toast.success(`Loaded ${mappedUsers.length} users`);
     return mappedUsers;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error while fetching users';
-    console.error('fetchUsers error:', message);
-    toast.error('Unexpected error while fetching users');
+    toast.error('Failed to load users');
     throw error;
   }
 }
 
 export async function updateUserRole(userId: string, role: UserRole) {
   try {
-    toast.info(`Updating role for user ${userId} to ${role}...`);
-    console.log('Starting role update process for user:', userId);
+    toast.info(`Updating user role...`);
     
-    // Step 1: Debug - verify the tables we're working with
-    const { data: tables } = await supabase
-      .from('pg_tables')
-      .select('schemaname, tablename')
-      .in('tablename', ['roles', 'user_roles'])
-      .in('schemaname', ['public']);
-      
-    console.log('Available tables:', tables);
-    
-    // Step 2: Get the role ID for the given role name from public.roles
-    console.log('Querying public.roles table for role:', role);
+    // Get the role ID for the given role name from public.roles
     const { data: roleData, error: roleError } = await supabase
       .from('roles')
       .select('id, name')
@@ -86,37 +72,19 @@ export async function updateUserRole(userId: string, role: UserRole) {
       .single();
 
     if (roleError) {
-      console.error('Error fetching role ID:', roleError);
-      toast.error(`Failed to find role: ${roleError.message}`);
+      toast.error(`Failed to find role`);
       throw new Error(`Failed to find role: ${roleError.message}`);
     }
 
     if (!roleData) {
-      console.error('Role not found:', role);
-      toast.error(`Role "${role}" not found in the database`);
+      toast.error(`Role not found`);
       throw new Error(`Role "${role}" not found in the database`);
     }
 
     const roleId = roleData.id;
-    console.log(`Found role ID ${roleId} for role "${roleData.name}" in public.roles table`);
     
-    // Step 3: Check if a role already exists for this user
-    console.log('Checking existing roles for user in public.user_roles table');
-    const { data: existingRole, error: checkError } = await supabase
-      .from('user_roles')
-      .select('role_id')
-      .eq('user_id', userId)
-      .single();
-      
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-      console.error('Error checking existing role:', checkError);
-    } else {
-      console.log('Current user role in public.user_roles:', existingRole);
-    }
-    
-    // Step 4: Using upsert to update public.user_roles table
-    console.log(`Upserting user role in public.user_roles: user_id=${userId}, role_id=${roleId}`);
-    const { data, error: upsertError, status, statusText } = await supabase
+    // Using upsert to update public.user_roles table
+    const { error: upsertError } = await supabase
       .from('user_roles')
       .upsert({
         user_id: userId,
@@ -126,72 +94,38 @@ export async function updateUserRole(userId: string, role: UserRole) {
         onConflict: 'user_id'
       });
 
-    console.log('Upsert response:', { status, statusText });
-
     if (upsertError) {
-      console.error('Error updating role:', upsertError);
-      toast.error(`Failed to update role: ${upsertError.message}`);
+      toast.error(`Failed to update role`);
       throw new Error(`Failed to update role: ${upsertError.message}`);
     }
     
-    // Step 5: Verify the update was successful
-    console.log('Verifying update in public.user_roles table');
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('user_roles')
-      .select('role_id')
-      .eq('user_id', userId)
-      .single();
-      
-    if (verifyError) {
-      console.error('Error verifying update:', verifyError);
-    } else {
-      console.log('Verification result:', verifyData);
-      if (verifyData.role_id === roleId) {
-        console.log('Role update successful!');
-      } else {
-        console.warn('Role update may have failed. Expected role_id:', roleId, 'Got:', verifyData.role_id);
-      }
-    }
-    
-    toast.success(`Successfully updated user role to ${role}`);
+    toast.success(`Role updated successfully`);
     return true;
   } catch (error: any) {
-    // More robust error handling
-    const errorMessage = error?.message || 'Unexpected error while updating role';
-    console.error('updateUserRole unexpected error:', error);
-    toast.error(errorMessage);
-    throw new Error(errorMessage);
+    toast.error('Failed to update user role');
+    throw new Error(error?.message || 'Failed to update user role');
   }
 }
 
 export async function getUserRole(userId: string): Promise<UserRole> {
   try {
-    // Minimize toast notifications to avoid UI freezes
-    console.log('Checking user role...');
-    
-    // Properly wrap the PostgrestBuilder with Promise.resolve() like in fetchUsers
+    // Execute the query directly without Promise.resolve() wrapper
     const { data, error } = await withTimeout(
-      Promise.resolve(
-        supabase
-          .from('user_management_view')
-          .select('role')
-          .eq('id', userId)
-          .single()
-      ),
+      supabase
+        .from('user_management_view')
+        .select('role')
+        .eq('id', userId)
+        .single(),
       TIMEOUT_MS
     );
 
     if (error) {
-      console.error('Get role error:', error);
       throw new Error(`Failed to get user role: ${error.message}`);
     }
     
-    const role = (data?.role as UserRole) || 'free';
-    console.log(`User role: ${role}`);
-    return role;
+    return (data?.role as UserRole) || 'free';
   } catch (error) {
-    console.error('getUserRole error:', error);
-    // Don't show error toast here since ProtectedRoute will handle it
+    // Default to free access level if we can't determine the role
     return 'free';
   }
 }

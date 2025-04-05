@@ -112,7 +112,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event);
       
       if (!session) {
         // Only show error toast for explicit sign out events
