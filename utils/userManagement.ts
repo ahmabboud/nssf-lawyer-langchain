@@ -169,14 +169,17 @@ export async function getUserRole(userId: string): Promise<UserRole> {
     // Minimize toast notifications to avoid UI freezes
     console.log('Checking user role...');
     
-    const queryPromise = supabase
-      .from('user_management_view')
-      .select('role')
-      .eq('id', userId)
-      .single();
-    
-    // Apply timeout to prevent indefinite waiting
-    const { data, error } = await withTimeout(queryPromise, TIMEOUT_MS);
+    // Properly wrap the PostgrestBuilder with Promise.resolve() like in fetchUsers
+    const { data, error } = await withTimeout(
+      Promise.resolve(
+        supabase
+          .from('user_management_view')
+          .select('role')
+          .eq('id', userId)
+          .single()
+      ),
+      TIMEOUT_MS
+    );
 
     if (error) {
       console.error('Get role error:', error);
