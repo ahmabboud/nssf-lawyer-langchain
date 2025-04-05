@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { RecursiveCharacterTextSplitter, CharacterTextSplitter } from "@langchain/textsplitters";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { config } from "@/utils/config";
@@ -12,6 +12,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 // Change runtime from edge to nodejs
 export const runtime = "nodejs";
+
+/**
+ * Custom function to split text based on a separator pattern
+ * This avoids using RegexTextSplitter which may not be available in the current package version
+ */
+function splitTextOnPattern(text: string, separator: string): string[] {
+  // Escape special regex characters if present in the separator
+  const escapedSeparator = separator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Create a regular expression using the escaped separator
+  const regex = new RegExp(escapedSeparator, 'g');
+  // Split the text on the separator
+  return text.split(regex).filter(chunk => chunk.trim() !== '');
+}
 
 /**
  * Sanitize text content to remove invalid Unicode sequences and normalize text
@@ -73,6 +86,12 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    
+    // Get the chunking configuration from form data
+    const chunkingMethod = formData.get("chunkingMethod") as string || "window";
+    const windowSize = parseInt(formData.get("windowSize") as string || "1000", 10);
+    const overlapSize = parseInt(formData.get("overlapSize") as string || "100", 10);
+    const splitterTerm = formData.get("splitterTerm") as string || "\n\n";
 
     if (!file) {
       return NextResponse.json(
@@ -134,24 +153,60 @@ export async function POST(req: NextRequest) {
     // Create Supabase client
     const client = createServerSupabaseClient();
     
-    // Split the document into chunks
-    const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-      chunkSize: 1000,
-      chunkOverlap: 100,
-    });
-
     // Create document metadata with file info
     const metadata = {
       source: file.name,
       uploadDate: new Date().toISOString(),
+      chunkingMethod: chunkingMethod,
+      chunkingOptions: chunkingMethod === 'window' 
+        ? { windowSize, overlapSize }
+        : { splitterTerm }
     };
 
-    // Create documents with content and metadata
-    const docs = await splitter.createDocuments(
-      [fileContent],
-      [metadata]
-    );
-
+    let docs;
+    
+    // Split the document into chunks based on the selected method
+    if (chunkingMethod === "window") {
+      const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+        chunkSize: windowSize,
+        chunkOverlap: overlapSize,
+      });
+      
+      docs = await splitter.createDocuments(
+        [fileContent],
+        [metadata]
+      );
+    } else {
+      // Use custom splitting function for pattern-based splitting
+      const chunks = splitTextOnPattern(fileContent, splitterTerm);
+      console.log(`Custom splitter created ${chunks.length} chunks using pattern: ${splitterTerm}`);
+      
+      // Convert chunks to Document objects with metadata
+      docs = chunks.map(chunk => {
+        return new Document({
+          pageContent: chunk,
+          metadata: {
+            ...metadata,
+            chunkingMethod: "splitter",
+            splitterTerm: splitterTerm,
+          },
+        });
+      });
+      
+      // If no documents were created, fall back to character splitter
+      if (!docs.length) {
+        console.log('Custom splitting failed to split, falling back to CharacterTextSplitter');
+        const fallbackSplitter = new CharacterTextSplitter({
+          separator: splitterTerm,
+          keepSeparator: false,
+        });
+        docs = await fallbackSplitter.createDocuments(
+          [fileContent],
+          [metadata]
+        );
+      }
+    }
+    
     // Store documents in the Supabase vector store
     await SupabaseVectorStore.fromDocuments(
       docs,
@@ -165,7 +220,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true,
-      message: `Successfully processed and stored ${docs.length} chunks from ${file.name}` 
+      message: `Successfully processed and stored ${docs.length} chunks from ${file.name} using ${chunkingMethod} method`,
+      chunks: docs.length
     }, { status: 200 });
     
   } catch (e: any) {

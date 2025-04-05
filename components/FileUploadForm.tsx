@@ -4,13 +4,31 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2 } from "lucide-react";
 
+interface ChunkingOptions {
+  windowSize: number;
+  overlapSize: number;
+  splitterTerm: string;
+}
+
 interface FileUploadFormProps {
   onLoadingChange?: Dispatch<SetStateAction<boolean>>;
   onError?: Dispatch<SetStateAction<string | null>>;
   disabled?: boolean;
+  chunkingMethod?: "window" | "splitter";
+  chunkingOptions?: ChunkingOptions;
 }
 
-export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploadFormProps) {
+export function FileUploadForm({ 
+  onLoadingChange, 
+  onError, 
+  disabled,
+  chunkingMethod = "window",
+  chunkingOptions = {
+    windowSize: 1000,
+    overlapSize: 100,
+    splitterTerm: "\n\n"
+  }
+}: FileUploadFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -38,10 +56,22 @@ export function FileUploadForm({ onLoadingChange, onError, disabled }: FileUploa
       // Create form data for file upload
       const formData = new FormData();
       formData.append("file", file);
+      
+      // Add chunking configuration to form data
+      formData.append("chunkingMethod", chunkingMethod);
+      
+      if (chunkingMethod === "window") {
+        formData.append("windowSize", chunkingOptions.windowSize.toString());
+        formData.append("overlapSize", chunkingOptions.overlapSize.toString());
+      } else {
+        formData.append("splitterTerm", chunkingOptions.splitterTerm);
+      }
+
       const response = await fetch("/api/retrieval/ingest/file", {
         method: "POST",
         body: formData,
       });
+
       if (response.status === 200) {
         const data = await response.json();
         setMessage(data.message || "File uploaded and processed successfully!");
