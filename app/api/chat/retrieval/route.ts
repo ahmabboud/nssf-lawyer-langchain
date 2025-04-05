@@ -62,6 +62,10 @@ If the answer is not in the context or chat history, politely state that you don
 Always maintain a professional and formal tone suitable for legal consultations.
 
 Include citations in the format [1], [2], etc. corresponding to the relevant documents from the context. Only cite documents that were actually used in formulating the answer.
+At the end of your answer, include a "References:" section that lists all the cited documents in the format:
+[1] Document title - Document Name
+[2] Document title - Document Name
+And so on.
 `;
 
 const answerPrompt = PromptTemplate.fromTemplate(ANSWER_TEMPLATE);
