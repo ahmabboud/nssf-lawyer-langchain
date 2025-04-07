@@ -77,13 +77,14 @@ export function ChatInput(props: {
         }
       }}
       className={cn("flex w-full flex-col", props.className)}
+      dir="rtl"
     >
       <div className="border border-input bg-secondary rounded-lg flex flex-col gap-2 max-w-[768px] w-full mx-auto">
         <input
           value={props.value}
           placeholder={props.placeholder}
           onChange={props.onChange}
-          className="border-none outline-none bg-transparent p-4"
+          className="border-none outline-none bg-transparent p-4 text-right"
         />
 
         <div className="flex justify-between ml-4 mr-2 mb-2">
@@ -95,10 +96,10 @@ export function ChatInput(props: {
               {props.loading ? (
                 <span role="status" className="flex justify-center">
                   <LoaderCircle className="animate-spin" />
-                  <span className="sr-only">Loading...</span>
+                  <span className="sr-only">جارٍ المعالجة...</span>
                 </span>
               ) : (
-                <span>Send</span>
+                <span>إرسال</span>
               )}
             </Button>
           </div>
@@ -119,7 +120,7 @@ function ScrollToBottom(props: { className?: string }) {
       onClick={() => scrollToBottom()}
     >
       <ArrowDown className="w-4 h-4" />
-      <span>Scroll to bottom</span>
+      <span>التمرير للأسفل</span>
     </Button>
   );
 }
@@ -132,12 +133,12 @@ function StickyToBottomContent(props: {
 }) {
   const context = useStickToBottomContext();
 
-  // scrollRef will also switch between overflow: unset to overflow: auto
   return (
     <div
       ref={context.scrollRef}
       style={{ width: "100%", height: "100%" }}
       className={cn("grid grid-rows-[1fr,auto]", props.className)}
+      dir="rtl"
     >
       <div ref={context.contentRef} className={props.contentClassName}>
         {props.content}
@@ -154,9 +155,13 @@ export function ChatLayout(props: { content: ReactNode; footer: ReactNode }) {
       <StickyToBottomContent
         className="absolute inset-0"
         contentClassName="py-8 px-2"
-        content={props.content}
+        content={
+          <div dir="rtl" lang="ar">
+            {props.content}
+          </div>
+        }
         footer={
-          <div className="sticky bottom-8 px-2">
+          <div dir="rtl" lang="ar" className="sticky bottom-8 px-2">
             <ScrollToBottom className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4" />
             {props.footer}
           </div>
@@ -179,7 +184,6 @@ export function ChatWindow(props: {
   );
   const [intermediateStepsLoading, setIntermediateStepsLoading] =
     useState(false);
-
   const [sourcesForMessages, setSourcesForMessages] = useState<
     Record<string, any>
   >({});
@@ -202,7 +206,7 @@ export function ChatWindow(props: {
     },
     streamMode: "text",
     onError: (e) =>
-      toast.error(`Error while processing your request`, {
+      toast.error(`حدث خطأ أثناء معالجة الطلب`, {
         description: e.message,
       }),
   });
@@ -216,7 +220,6 @@ export function ChatWindow(props: {
       return;
     }
 
-    // Some extra work to show intermediate steps properly
     setIntermediateStepsLoading(true);
 
     chat.setInput("");
@@ -238,16 +241,13 @@ export function ChatWindow(props: {
     setIntermediateStepsLoading(false);
 
     if (!response.ok) {
-      toast.error(`Error while processing your request`, {
+      toast.error(`حدث خطأ أثناء معالجة الطلب`, {
         description: json.error,
       });
       return;
     }
 
     const responseMessages: Message[] = json.messages;
-
-    // Represent intermediate steps as system messages for display purposes
-    // TODO: Add proper support for tool messages
     const toolCallMessages = responseMessages.filter(
       (responseMessage: Message) => {
         return (
@@ -310,7 +310,9 @@ export function ChatWindow(props: {
           onChange={chat.handleInputChange}
           onSubmit={sendMessage}
           loading={chat.isLoading || intermediateStepsLoading}
-          placeholder={props.placeholder ?? "What's it like to be a pirate?"}
+          placeholder={
+            props.placeholder ?? "اسألني شيئًا عن قوانين وأنظمة الضمان الاجتماعي..."
+          }
         >
           {props.showIngestForm && (
             <Dialog>
@@ -321,23 +323,23 @@ export function ChatWindow(props: {
                   disabled={chat.messages.length !== 0}
                 >
                   <Paperclip className="size-4" />
-                  <span>Upload document</span>
+                  <span>رفع مستند</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Upload document</DialogTitle>
+                  <DialogTitle>رفع مستند</DialogTitle>
                   <DialogDescription>
-                    Upload a document to use for the chat.
+                    ارفع مستندًا لاستخدامه في الدردشة.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <h3 className="font-medium mb-2">Upload a .docx file</h3>
+                    <h3 className="font-medium mb-2">ارفع ملف .docx</h3>
                     <FileUploadForm />
                   </div>
                   <div className="mt-4">
-                    <h3 className="font-medium mb-2">Or paste text directly</h3>
+                    <h3 className="font-medium mb-2">أو ألصق النص مباشرة</h3>
                     <UploadDocumentsForm />
                   </div>
                 </div>
@@ -355,7 +357,7 @@ export function ChatWindow(props: {
                 onCheckedChange={(e) => setShowIntermediateSteps(!!e)}
               />
               <label htmlFor="show_intermediate_steps" className="text-sm">
-                Show intermediate steps
+                عرض الخطوات الوسيطة
               </label>
             </div>
           )}
