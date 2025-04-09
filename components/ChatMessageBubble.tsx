@@ -1,6 +1,7 @@
 import { cn } from "@/utils/cn";
 import type { Message } from "ai/react";
 import ReactMarkdown from "react-markdown";
+import { DownloadButton } from "@/components/ui/download-button";
 
 export function ChatMessageBubble(props: {
   message: Message;
@@ -66,7 +67,17 @@ export function ChatMessageBubble(props: {
           {props.message.content}
         </ReactMarkdown>
 
-
+        {props.message.role !== "user" && (
+          <div className={cn(
+            "mt-2",
+            isArabic ? "text-left" : "text-right" // Reverse alignment for Arabic
+          )}>
+            <DownloadButton 
+              content={props.message.content}
+              fileName={`ai-response-${new Date().getTime()}`}
+            />
+          </div>
+        )}
 
         {props.sources && props.sources.length ? (
           <>
