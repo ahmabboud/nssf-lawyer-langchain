@@ -1,25 +1,45 @@
-// app/api/ai-responses/pdf/route.ts
+// app/api/generate-pdf/route.ts
 import { NextResponse } from 'next/server';
-import { generatePdfFromText } from '../../../../lib/pdf-generator';
+import { generatePdfFromText } from '@/lib/pdf-generator';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { content } = await req.json();  // Extract JSON content from the request body
-    const pdfBuffer = await generatePdfFromText(content);
+    // Get user role from headers or session
+    const userRole = request.headers.get('user-role');
 
-    // Return the PDF with the appropriate headers for downloading
+    // Check if the user is authorized
+    if (userRole !== 'admin' && userRole !== 'read-only') {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 403 }
+      );
+    }
+
+    const content = await request.text();
+
+    if (!content) {
+      return NextResponse.json(
+        { error: 'Content is required' },
+        { status: 400 }
+      );
+    }
+
+    const pdfBuffer = await generatePdfFromText(content);
+    
     return new NextResponse(pdfBuffer, {
-      status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename=generated.pdf',
+        'Content-Disposition': 'attachment; filename="ai-response.pdf"',
       },
     });
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    return new NextResponse(JSON.stringify({ error: 'Failed to generate PDF' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('PDF generation error:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to generate PDF',
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
   }
 }

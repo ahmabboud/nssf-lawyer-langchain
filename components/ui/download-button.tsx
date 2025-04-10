@@ -5,20 +5,33 @@ import { toast } from 'sonner';
 export const DownloadButton = ({ content, fileName }: { content: string, fileName: string }) => {
   const handleDownload = async (format: 'pdf' | 'docx') => {
     try {
-      const response = await fetch(`app/api/ai-responses/${format}`, {
-        method: 'POST',  // Ensure this is 'POST'
+      const response = await fetch(`/api/ai-responses/${format}`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/html',
+          'user-role': 'admin', // optional: only needed if DOCX route uses it
         },
-        body: JSON.stringify({ content }),
+        body: content,
       });
   
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to download');
+        let errorMessage = 'Failed to download';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType?.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            const text = await response.text();
+            console.error('Non-JSON error response:', text);
+          }
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        throw new Error(errorMessage);
       }
   
-      const data = await response.blob(); 
+      const data = await response.blob();
       const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
@@ -27,7 +40,7 @@ export const DownloadButton = ({ content, fileName }: { content: string, fileNam
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
-      
+  
       toast.success(`Downloaded as ${format.toUpperCase()}`);
     } catch (error) {
       console.error('Download failed with error:', error);
