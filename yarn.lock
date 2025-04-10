@@ -3642,13 +3642,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dommatrix@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "dommatrix@npm:1.0.3"
-  checksum: 8ac727c1a14cf8de30a5b49a3bd6b2622a661b391fe1ac54e855eaa14a857ed86d63492150b5f70f912acc24fa3acc31d750259c47e9b5801de237624b0a319f
-  languageName: node
-  linkType: hard
-
 "duck@npm:^0.1.12":
   version: 0.1.12
   resolution: "duck@npm:0.1.12"
@@ -5472,7 +5465,6 @@ __metadata:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     docx: ^9.3.0
-    dommatrix: ^1.0.3
     eslint: 8.46.0
     eslint-config-next: 13.4.12
     jszip: ^3.10.1
