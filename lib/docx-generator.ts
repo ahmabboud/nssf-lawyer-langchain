@@ -1,18 +1,19 @@
 import * as docx from 'docx';
 
+// Helper function to handle newlines in the content
 export async function generateDocxFromText(content: string) {
-  // Strip basic HTML tags (for safety, use a parser if needed)
-  const plainText = content.replace(/<[^>]+>/g, '');
+  // Split the content by newlines to preserve line breaks
+  const lines = content.split('\n');
 
   const doc = new docx.Document({
     sections: [
       {
         properties: {},
-        children: [
+        children: lines.map(line => 
           new docx.Paragraph({
-            children: [new docx.TextRun(plainText)],
-          }),
-        ],
+            children: [new docx.TextRun(line)],
+          })
+        ),
       },
     ],
   });
