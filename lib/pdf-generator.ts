@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer';
+import dommatrix from 'dommatrix';
 
 // Function to generate PDF from HTML content
 export const generatePdfFromHtml = async (content: string): Promise<Buffer> => {
