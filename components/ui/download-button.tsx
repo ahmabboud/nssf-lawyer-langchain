@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 export const DownloadButton = ({ content, fileName }: { content: string, fileName: string }) => {
   const handleDownload = async (format: 'pdf' | 'docx') => {
     try {
+      console.log('Starting download for format:', format);
+      
       const response = await fetch(`/api/ai-responses/${format}`, {
         method: 'POST',
         headers: {

@@ -1,45 +1,35 @@
-// app/api/generate-pdf/route.ts
 import { NextResponse } from 'next/server';
-import { generatePdfFromText } from '@/lib/pdf-generator';
+import { generatePdfFromHtml } from '../../../../lib/pdf-generator'; // Adjust the path to your PDF generation file
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    // Get user role from headers or session
-    const userRole = request.headers.get('user-role');
+    // Get the raw HTML content from the request body
+    const content = await req.text();
 
-    // Check if the user is authorized
-    if (userRole !== 'admin' && userRole !== 'read-only') {
-      return NextResponse.json(
-        { error: 'Unauthorized' }, 
-        { status: 403 }
-      );
-    }
-
-    const content = await request.text();
-
+    // Check if content is provided
     if (!content) {
-      return NextResponse.json(
-        { error: 'Content is required' },
-        { status: 400 }
+      return new NextResponse(
+        JSON.stringify({ error: 'Content is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const pdfBuffer = await generatePdfFromText(content);
-    
+    // Generate the PDF buffer from the HTML content
+    const pdfBuffer = await generatePdfFromHtml(content);
+
+    // Return the generated PDF as a response
     return new NextResponse(pdfBuffer, {
+      status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="ai-response.pdf"',
+        'Content-Disposition': 'attachment; filename=ai-response.pdf',
       },
     });
   } catch (error) {
-    console.error('PDF generation error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to generate PDF',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
+    console.error('Error generating PDF:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to generate PDF' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
