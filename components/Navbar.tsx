@@ -104,17 +104,27 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className="flex items-center justify-between py-2 px-4">
-      <div className="flex items-center space-x-2">
-        <ActiveLink href="/">
-          Home
-        </ActiveLink>
-        
-        {isAdmin && (
-          <ActiveLink href="/admin/documents">
-            <FileTextIcon size={16} />
-            <span>Documents</span>
-          </ActiveLink>
+    <nav className={`flex items-center justify-between py-2 px-4 ${!isAdmin ? 'rtl' : ''}`}>
+      <div className="flex items-center space-x-2 rtl:space-x-reverse">
+        {isAdmin ? (
+          // Admin English Interface
+          <>
+            <ActiveLink href="/">
+              Home
+            </ActiveLink>
+            
+            <ActiveLink href="/admin/documents">
+              <FileTextIcon size={16} />
+              <span>Documents</span>
+            </ActiveLink>
+          </>
+        ) : (
+          // User Arabic Interface
+          <>
+            <ActiveLink href="/">
+              الرئيسية
+            </ActiveLink>
+          </>
         )}
       </div>
       
@@ -123,10 +133,10 @@ export const Navbar = () => {
           variant="ghost" 
           size="sm" 
           onClick={handleSignOut}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground rtl:flex-row-reverse"
         >
           <LogOutIcon size={16} />
-          Sign Out
+          {isAdmin ? 'Sign Out' : 'تسجيل الخروج'}
         </Button>
       )}
     </nav>
