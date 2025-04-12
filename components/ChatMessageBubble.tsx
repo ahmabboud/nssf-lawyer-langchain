@@ -159,11 +159,11 @@ export function ChatMessageBubble(props: {
         )}
       </div>
 
-      {/* Centered Modal Popup for Source - Now showing full content */}
+      {/* Centered Modal Popup for Source */}
       {activeRef && source && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setActiveRef(null)}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div 
-            className="reference-popup bg-white border border-gray-300 shadow-lg p-6 rounded-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto"
+            className="reference-popup bg-white border border-gray-300 shadow-lg p-6 rounded-xl max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -175,43 +175,12 @@ export function ChatMessageBubble(props: {
                 ×
               </button>
             </div>
-            
-            {/* Full content display */}
-            <div className="prose prose-sm max-w-none">
-              {source.content ? (
-                // If source has a structured content property
-                <ReactMarkdown>
-                  {source.content}
-                </ReactMarkdown>
-              ) : (
-                // Display the entire pageContent
-                <div className="text-gray-800 whitespace-pre-wrap">
-                  {source.pageContent}
-                </div>
-              )}
-              
-              {/* Show metadata if available */}
-              {source.metadata && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-600 mb-2">Source Information</h4>
-                  
-                  {source.metadata.source && (
-                    <div className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">Source:</span> {source.metadata.source}
-                    </div>
-                  )}
-                  
-                  {source.metadata.loc?.lines && (
-                    <div className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">Lines:</span> {source.metadata.loc.lines.from} to {source.metadata.loc.lines.to}
-                    </div>
-                  )}
-                  
-                  {source.metadata.loc?.page && (
-                    <div className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">Page:</span> {source.metadata.loc.page}
-                    </div>
-                  )}
+            <div className="mt-2">
+              <p className="text-gray-800">"{source.pageContent}"</p>
+              {source.metadata?.loc?.lines && (
+                <div className="text-gray-500 mt-3 text-sm">
+                  Lines {source.metadata.loc.lines.from} to{" "}
+                  {source.metadata.loc.lines.to}
                 </div>
               )}
             </div>
