@@ -40,7 +40,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // This effect will run only on the client side
     if (typeof window !== "undefined") {
       document.body.setAttribute("data-new-gr-c-s-check-loaded", "9.75.0");
       document.body.setAttribute("data-gr-ext-installed", "");
@@ -48,42 +47,34 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="ar">
       <head>
         <title>Lawyer Assistant</title>
-        <link rel="shortcut icon" href="/images/chatbot-logo.jpg" />
-        <meta
-          name="description"
-          content="This is the starter for Lawyer Assistant."
-        />
-        <meta property="og:title" content="Lawyer Assistant" />
-        <meta
-          property="og:description"
-          content="Starter for Lawyer Assistant."
-        />
-        <meta property="og:image" content="/images/og-image.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Lawyer Assistant" />
-        <meta
-          name="twitter:description"
-          content="Starter for Lawyer Assistant."
-        />
-        <meta name="twitter:image" content="/images/og-image.png" />
+        {/* ... (keep other meta tags) ... */}
       </head>
       <body className={publicSans.className}>
         <NuqsAdapter>
           <div className="bg-secondary grid grid-rows-[auto,1fr] h-[100dvh]">
-            <div className="grid grid-cols-[1fr,auto] gap-2 p-4">
-              <div className="flex gap-4 flex-col md:flex-row md:items-center">
-              <h1 className="text-2xl font-bold text-center">NSSF Lawyer Assistant</h1>
-                <nav className="flex gap-1 flex-col md:flex-row">
-                  <ActiveLink href="/"> Chat</ActiveLink>
-                </nav>
-              </div>
-              <div className="flex justify-center items-center gap-2">
+            {/* Navigation Bar - Flex container */}
+            <div className="flex items-center justify-between p-4">
+              {/* Left: Navbar (far left) */}
+              <div className="flex items-center">
                 <Navbar />
               </div>
+
+              {/* Right: Arabic text container */}
+              <div className="flex items-center gap-4">
+                {/* المحادثة (left) */}
+                <nav>
+                  <ActiveLink href="/">المحادثة</ActiveLink>
+                </nav>
+                
+                {/* مساعد المحامي (right) */}
+                <h1 className="text-2xl font-bold">مساعد المحامي</h1>
+              </div>
             </div>
+
+            {/* Content Area */}
             <div className="bg-background mx-4 relative grid rounded-t-2xl border border-input border-b-0">
               <div className="absolute inset-0">
                 <MainContentWrapper>{children}</MainContentWrapper>
