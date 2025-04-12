@@ -1,7 +1,7 @@
 import { cn } from "@/utils/cn"; // Utility to merge Tailwind CSS class names conditionally
 import type { Message } from "ai/react"; // Type for a chat message
 import ReactMarkdown from "react-markdown"; // For rendering markdown (not used directly in the code)
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export function ChatMessageBubble(props: {
   message: Message; // Message object, includes .content and .role
@@ -13,7 +13,7 @@ export function ChatMessageBubble(props: {
   
   // State to manage the active reference (clicked reference button)
   const [activeRef, setActiveRef] = useState<number | null>(null);
-  const sources = props.sources || [];
+  const sources = useMemo(() => props.sources || [], [props.sources]);
 
   //Splitting the Message Content with References
   const parts = props.message.content.split(/(\[\d+\])/g);
@@ -99,14 +99,11 @@ export function ChatMessageBubble(props: {
       }
     };
 
-    if (activeRef !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [activeRef]);
+  }, []);
 
   // Get the source based on the active reference - display the content of the source
   const source =
@@ -146,7 +143,7 @@ export function ChatMessageBubble(props: {
             <h2 className="font-bold mb-2">🔍 Sources:</h2>
             {sources.map((source, i) => (
               <div className="mt-2" key={`source-${i}`}>
-                {i + 1}. &quot;{source.pageContent}&quot;
+                {i + 1}. &ldquo;{source.pageContent}&rdquo;
                 {source.metadata?.loc?.lines && (
                   <div className="text-gray-300 mt-1">
                     Lines {source.metadata.loc.lines.from} to{" "}
@@ -176,9 +173,9 @@ export function ChatMessageBubble(props: {
               </button>
             </div>
             <div className="mt-2">
-              <p className="text-gray-800">"{source.pageContent}"</p>
+              <p className="text-sm text-gray-800">&ldquo;{source.pageContent}&rdquo;</p>
               {source.metadata?.loc?.lines && (
-                <div className="text-gray-500 mt-3 text-sm">
+                <div className="text-gray-500 mt-1 text-xs">
                   Lines {source.metadata.loc.lines.from} to{" "}
                   {source.metadata.loc.lines.to}
                 </div>
