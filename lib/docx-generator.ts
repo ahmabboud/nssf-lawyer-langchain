@@ -1,23 +1,34 @@
-import * as docx from 'docx';
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  AlignmentType,
+} from 'docx';
 
-// Helper function to handle newlines in the content
 export async function generateDocxFromText(content: string) {
-  // Split the content by newlines to preserve line breaks
   const lines = content.split('\n');
 
-  const doc = new docx.Document({
+  const doc = new Document({
     sections: [
       {
         properties: {},
-        children: lines.map(line => 
-          new docx.Paragraph({
-            children: [new docx.TextRun(line)],
+        children: lines.map(line =>
+          new Paragraph({
+            bidirectional: true, // Enables right-to-left layout
+            alignment: AlignmentType.RIGHT, // Aligns text to the right
+            children: [
+              new TextRun({
+                text: line,
+                font: 'Arial', // Font that supports Arabic
+              }),
+            ],
           })
         ),
       },
     ],
   });
 
-  const buffer = await docx.Packer.toBuffer(doc);
+  const buffer = await Packer.toBuffer(doc);
   return buffer;
 }

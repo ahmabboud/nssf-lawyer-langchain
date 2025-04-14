@@ -1,31 +1,49 @@
 import puppeteer from 'puppeteer';
 
-// Function to generate PDF from HTML content
+// Function to generate PDF from HTML content with Arabic RTL support
 export const generatePdfFromHtml = async (content: string): Promise<Buffer> => {
   // Replace newlines (\n) with <br> for proper line breaks
   const htmlContent = content.replace(/\n/g, '<br />');
+
+  // Wrap the content in full RTL HTML
+  const fullHtml = `
+    <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body {
+            direction: rtl;
+            font-family: 'Arial', 'Amiri', 'Noto Naskh Arabic', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 2em;
+          }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+    </html>
+  `;
 
   // Launch a new headless browser
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  // Set the HTML content to be rendered in the page
-  await page.setContent(htmlContent, {
-    waitUntil: 'domcontentloaded', // Ensure DOM is loaded before rendering
+  // Set the full HTML content
+  await page.setContent(fullHtml, {
+    waitUntil: 'domcontentloaded',
   });
 
-  // Generate PDF from the content
+  // Generate the PDF
   const pdfBufferArray = await page.pdf({
-    format: 'A4', // PDF format
-    printBackground: true, // Ensure background colors are included
-    landscape: false, // Portrait mode
+    format: 'A4',
+    printBackground: true,
+    landscape: false,
   });
 
-  // Convert Uint8Array to Buffer
   const buffer = Buffer.from(pdfBufferArray);
 
-  // Close the browser instance
   await browser.close();
-
   return buffer;
 };
