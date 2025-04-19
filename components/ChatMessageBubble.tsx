@@ -1,24 +1,19 @@
 import { cn } from "@/utils/cn"; // Utility to merge Tailwind CSS class names conditionally
 import type { Message } from "ai/react"; // Type for a chat message
-import ReactMarkdown from "react-markdown"; // For rendering markdown (not used directly in the code)
+import ReactMarkdown from "react-markdown"; // For rendering markdown
 import { useEffect, useState, useMemo } from "react";
 
 export function ChatMessageBubble(props: {
-  message: Message; // Message object, includes .content and .role
-  aiEmoji?: string; // Optional emoji to represent the AI
-  sources?: any[];  // Array of source documents (used for citation popup)
+  message: Message;
+  aiEmoji?: string;
+  sources?: any[];
 }) {
-  //Text Direction Handling: Detects if the content contains Arabic characters and adjusts layout accordingly
   const isArabic = /[\u0600-\u06FF]/.test(props.message.content);
-  
-  // State to manage the active reference (clicked reference button)
   const [activeRef, setActiveRef] = useState<number | null>(null);
   const sources = useMemo(() => props.sources || [], [props.sources]);
 
-  //Splitting the Message Content with References
   const parts = props.message.content.split(/(\[\d+\])/g);
 
-  //Rendering References as Buttons
   const renderContentWithRefs = () =>
     parts.map((part, index) => {
       const match = part.match(/\[(\d+)\]/);
@@ -34,7 +29,6 @@ export function ChatMessageBubble(props: {
           </button>
         );
       } else {
-        // Render the part as markdown
         return (
           <ReactMarkdown
             key={index}
@@ -72,22 +66,20 @@ export function ChatMessageBubble(props: {
       }
     });
 
-  // New click handler for citation references
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.classList.contains("ref-btn")) {
         const ref = Number(target.getAttribute("data-ref"));
         if (!isNaN(ref) && ref > 0 && ref <= sources.length) {
-          setActiveRef(ref); // Show the popup
+          setActiveRef(ref);
         }
       }
     };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [sources]);
-  
-  // Close the reference popup when clicking outside of it
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -98,14 +90,12 @@ export function ChatMessageBubble(props: {
         setActiveRef(null);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  // Get the source based on the active reference - display the content of the source
   const source =
     activeRef && activeRef > 0 && activeRef <= sources.length
       ? sources[activeRef - 1]
@@ -144,6 +134,11 @@ export function ChatMessageBubble(props: {
             {sources.map((source, i) => (
               <div className="mt-2" key={`source-${i}`}>
                 {i + 1}. &ldquo;{source.pageContent}&rdquo;
+                {source.metadata?.source && (
+                  <div className="text-gray-300 mt-1">
+                    📄 {source.metadata.source}
+                  </div>
+                )}
                 {source.metadata?.loc?.lines && (
                   <div className="text-gray-300 mt-1">
                     Lines {source.metadata.loc.lines.from} to{" "}
@@ -159,13 +154,13 @@ export function ChatMessageBubble(props: {
       {/* Centered Modal Popup for Source */}
       {activeRef && source && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div 
+          <div
             className="reference-popup bg-white border border-gray-300 shadow-lg p-6 rounded-xl max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold">📄 Reference [{activeRef}]</h3>
-              <button 
+              <button
                 onClick={() => setActiveRef(null)}
                 className="text-gray-500 hover:text-gray-700 text-xl"
               >
@@ -173,7 +168,15 @@ export function ChatMessageBubble(props: {
               </button>
             </div>
             <div className="mt-2">
+              {/* Document Name */}
+              {source.metadata?.source && (
+                <div className="text-xs text-gray-500 mb-2">
+                  Document: <span className="font-semibold">{source.metadata.source}</span>
+                </div>
+              )}
+              {/* Page Content */}
               <p className="text-sm text-gray-800">&ldquo;{source.pageContent}&rdquo;</p>
+              {/* Line Numbers */}
               {source.metadata?.loc?.lines && (
                 <div className="text-gray-500 mt-1 text-xs">
                   Lines {source.metadata.loc.lines.from} to{" "}
