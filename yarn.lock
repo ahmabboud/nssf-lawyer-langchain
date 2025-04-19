@@ -3219,6 +3219,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chrome-aws-lambda@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "chrome-aws-lambda@npm:10.1.0"
+  dependencies:
+    lambdafs: ^2.0.3
+  peerDependencies:
+    puppeteer-core: ^10.1.0
+  checksum: e5ad2dc68cfaf33123fd94503fdacd1744f127f097a1a20e40a07a2e0b9f97ce7650aaec96a3ae6a941e86a2757d7c426f7d4171bff997e8d1454c4be1f298e0
+  languageName: node
+  linkType: hard
+
 "chromium-bidi@npm:3.0.0":
   version: 3.0.0
   resolution: "chromium-bidi@npm:3.0.0"
@@ -5436,6 +5447,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lambdafs@npm:^2.0.3":
+  version: 2.1.1
+  resolution: "lambdafs@npm:2.1.1"
+  dependencies:
+    tar-fs: "*"
+  bin:
+    lambdafs: bin/brotli.js
+  checksum: e277462851769dbb9062096e793d0da67f8bada78be9988bb177ddab91f9335ba1f67ea9fc0768c966dc52381301575945211b6e34061a068b82f127e6848e4e
+  languageName: node
+  linkType: hard
+
 "langchain-nextjs-template@workspace:.":
   version: 0.0.0-use.local
   resolution: "langchain-nextjs-template@workspace:."
@@ -5462,6 +5484,7 @@ __metadata:
     "@xmldom/xmldom": ^0.9.8
     ai: ^3.1.12
     autoprefixer: 10.4.14
+    chrome-aws-lambda: ^10.1.0
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     docx: ^9.3.0
@@ -5481,6 +5504,7 @@ __metadata:
     postcss: 8.4.27
     prettier: ^3.4.2
     puppeteer: ^24.6.1
+    puppeteer-core: ^24.6.1
     react: ^18.3.1
     react-dom: ^18.3.1
     react-markdown: ^10.1.0
@@ -7181,7 +7205,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-core@npm:24.6.1":
+"puppeteer-core@npm:24.6.1, puppeteer-core@npm:^24.6.1":
   version: 24.6.1
   resolution: "puppeteer-core@npm:24.6.1"
   dependencies:
@@ -8259,7 +8283,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar-fs@npm:^3.0.8":
+"tar-fs@npm:*, tar-fs@npm:^3.0.8":
   version: 3.0.8
   resolution: "tar-fs@npm:3.0.8"
   dependencies:
