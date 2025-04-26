@@ -1,15 +1,100 @@
+import React, { useState, useEffect } from "react";
 import { cn } from "@/utils/cn";
 import type { Message } from "ai/react";
 import ReactMarkdown from "react-markdown";
 import { DownloadButton } from "@/components/ui/download-button";
+
+// Regex to match [1], [2], etc.
+const REF_REGEX = /\[(\d+)\]/g;
 
 export function ChatMessageBubble(props: {
   message: Message;
   aiEmoji?: string;
   sources: any[];
 }) {
-  // Detect if content is primarily Arabic (simple detection)
   const isArabic = /[\u0600-\u06FF]/.test(props.message.content);
+
+  // State for which reference popup is open (null if none)
+  const [openRef, setOpenRef] = useState<number | null>(null);
+
+  // Handler to close popup when clicking outside
+  useEffect(() => {
+    if (openRef === null) return;
+    function handleClick() {
+      setOpenRef(null);
+    }
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, [openRef]);
+
+  // Custom renderer for text nodes to replace [x] with clickable refs
+  function renderWithRefs(text: string) {
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    // Unique key prefix per message to avoid conflicts
+    const keyPrefix = "ref-" + (props.message.id || Math.random());
+
+    while ((match = REF_REGEX.exec(text)) !== null) {
+      const refNum = Number(match[1]);
+      const hasSource = props.sources && props.sources[refNum - 1];
+
+      // Push preceding text
+      if (match.index > lastIndex) {
+        elements.push(text.slice(lastIndex, match.index));
+      }
+
+      // Push clickable reference
+      elements.push(
+        <span
+          key={`${keyPrefix}-${refNum}-${match.index}`}
+          className="text-blue-600 underline cursor-pointer relative"
+          onClick={e => {
+            e.stopPropagation();
+            setOpenRef(refNum === openRef ? null : refNum);
+          }}
+        >
+          [{refNum}]
+          {/* Popup card */}
+          {openRef === refNum && hasSource && (
+            <div
+              className={cn(
+                "absolute z-50 bg-white text-black border border-gray-300 rounded shadow-lg p-4 min-w-[250px] max-w-[350px]",
+                isArabic ? "right-full mr-2" : "left-full ml-2"
+              )}
+              style={{ top: "100%", whiteSpace: "normal" }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="font-bold mb-2">Source {refNum}</div>
+              <div className="text-sm">
+                {props.sources[refNum - 1]?.pageContent || "No source found."}
+                {props.sources[refNum - 1]?.metadata?.loc?.lines && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    Lines {props.sources[refNum - 1].metadata.loc.lines.from} to{" "}
+                    {props.sources[refNum - 1].metadata.loc.lines.to}
+                  </div>
+                )}
+              </div>
+              <button
+                className="mt-2 text-xs text-blue-600 underline"
+                onClick={() => setOpenRef(null)}
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </span>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    // Push any remaining text
+    if (lastIndex < text.length) {
+      elements.push(text.slice(lastIndex));
+    }
+    return elements;
+  }
+
   return (
     <div
       className={cn(
@@ -23,18 +108,39 @@ export function ChatMessageBubble(props: {
       dir={isArabic ? "rtl" : "ltr"}
     >
       {props.message.role !== "user" && (
-    <div className={cn(
-    "border bg-secondary -mt-2 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center",
-    isArabic ? "ml-4" : "mr-4"
-    )}>
-      {props.aiEmoji}
+        <div
+          className={cn(
+            "border bg-secondary -mt-2 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center",
+            isArabic ? "ml-4" : "mr-4"
+          )}
+        >
+          {props.aiEmoji}
         </div>
       )}
 
       <div className="whitespace-pre-wrap flex flex-col">
-
         <ReactMarkdown
           components={{
+            // Custom paragraph renderer to handle references
+            p: ({ node, children, ...props2 }) => {
+              if (!children) return <p {...props2}></p>;
+              const childrenArray = React.Children.toArray(children);
+              return (
+                <p {...props2}>
+                  {childrenArray.map((child: React.ReactNode, idx: number) => {
+                    if (typeof child === "string" && REF_REGEX.test(child)) {
+                      REF_REGEX.lastIndex = 0; // Reset regex state
+                      return (
+                        <React.Fragment key={idx}>
+                          {renderWithRefs(child)}
+                        </React.Fragment>
+                      );
+                    }
+                    return child;
+                  })}
+                </p>
+              );
+            },
             h1: ({ node, ...props }) => (
               <h1 className="text-2xl font-bold mt-0 mb-2" {...props} />
             ),
@@ -68,11 +174,13 @@ export function ChatMessageBubble(props: {
         </ReactMarkdown>
 
         {props.message.role !== "user" && (
-          <div className={cn(
-            "mt-2",
-            isArabic ? "text-left" : "text-right" // Reverse alignment for Arabic
-          )}>
-            <DownloadButton 
+          <div
+            className={cn(
+              "mt-2",
+              isArabic ? "text-left" : "text-right"
+            )}
+          >
+            <DownloadButton
               content={props.message.content}
               fileName={`ai-response-${new Date().getTime()}`}
             />
