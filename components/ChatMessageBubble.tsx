@@ -21,6 +21,7 @@ export function ChatMessageBubble(props: {
   useEffect(() => {
     if (openRef === null) return;
     function handleClick() {
+      console.log("Window click detected, closing popup");
       setOpenRef(null);
     }
     window.addEventListener("click", handleClick);
@@ -40,6 +41,9 @@ export function ChatMessageBubble(props: {
       const refNum = Number(match[1]);
       const hasSource = props.sources && props.sources[refNum - 1];
 
+      console.log(`Reference [${refNum}] found. Has source:`, hasSource);
+      console.log("Current openRef:", openRef);
+
       // Push preceding text
       if (match.index > lastIndex) {
         elements.push(text.slice(lastIndex, match.index));
@@ -50,9 +54,14 @@ export function ChatMessageBubble(props: {
         <span
           key={`${keyPrefix}-${refNum}-${match.index}`}
           className="text-blue-600 underline cursor-pointer relative"
-          onClick={e => {
+          onClick={(e) => {
+            console.log(`Reference [${refNum}] clicked`);
+            console.log("Event target:", e.target);
+            console.log("Current sources:", props.sources);
             e.stopPropagation();
-            setOpenRef(refNum === openRef ? null : refNum);
+            const newRef = refNum === openRef ? null : refNum;
+            console.log("Setting openRef to:", newRef);
+            setOpenRef(newRef);
           }}
         >
           [{refNum}]
@@ -64,7 +73,10 @@ export function ChatMessageBubble(props: {
                 isArabic ? "right-full mr-2" : "left-full ml-2"
               )}
               style={{ top: "100%", whiteSpace: "normal" }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => {
+                console.log("Popup content clicked");
+                e.stopPropagation();
+              }}
             >
               <div className="font-bold mb-2">Source {refNum}</div>
               <div className="text-sm">
@@ -78,7 +90,10 @@ export function ChatMessageBubble(props: {
               </div>
               <button
                 className="mt-2 text-xs text-blue-600 underline"
-                onClick={() => setOpenRef(null)}
+                onClick={() => {
+                  console.log("Close button clicked");
+                  setOpenRef(null);
+                }}
               >
                 Close
               </button>
@@ -94,6 +109,15 @@ export function ChatMessageBubble(props: {
     }
     return elements;
   }
+
+  // Debug log for props
+  useEffect(() => {
+    console.log("Message bubble props updated:", {
+      messageId: props.message.id,
+      sources: props.sources,
+      openRef,
+    });
+  }, [props.message.id, props.sources, openRef]);
 
   return (
     <div
@@ -125,6 +149,7 @@ export function ChatMessageBubble(props: {
             p: ({ node, children, ...props2 }) => {
               if (!children) return <p {...props2}></p>;
               const childrenArray = React.Children.toArray(children);
+              console.log("Markdown paragraph children:", childrenArray);
               return (
                 <p {...props2}>
                   {childrenArray.map((child: React.ReactNode, idx: number) => {
