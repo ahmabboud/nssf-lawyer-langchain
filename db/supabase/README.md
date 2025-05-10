@@ -46,6 +46,8 @@ The chat system uses two main tables:
 - `id`: UUID (Primary Key)
 - `user_id`: UUID (References auth.users)
 - `title`: Text
+- `is_pinned`: Boolean (Whether the thread is pinned by the user)
+- `metadata`: JSONB (Additional configurable metadata for the thread)
 - `created_at`: Timestamp
 - `updated_at`: Timestamp
 
@@ -54,9 +56,36 @@ The chat system uses two main tables:
 - `thread_id`: UUID (References chat_threads)
 - `role`: Text ('user', 'assistant', or 'system')
 - `content`: Text
+- `metadata`: JSONB (Additional metadata like token counts, model info)
+- `tokens_used`: Integer (Number of tokens used for this message)
+- `referenced_documents`: BIGINT[] (Array of document IDs referenced in this message)
 - `created_at`: Timestamp
 
-Row Level Security (RLS) policies ensure users can only access their own chat threads and messages.
+### profiles
+- `id`: UUID (References auth.users)
+- `full_name`: Text
+- `created_at`: Timestamp
+- `updated_at`: Timestamp
+
+## Document Thread Context
+
+Documents can now be associated with chat threads:
+- The `documents` table includes `created_by` (UUID) and `thread_id` (UUID) fields
+- The `match_documents_in_thread` function allows searching for documents within a specific thread context
+
+## Security and Performance
+
+Row Level Security (RLS) policies ensure users can only:
+- View, create, update, and delete their own chat threads
+- View, create, and delete messages in their own threads
+- View and update their own profile
+
+Performance optimizations include indexes on:
+- `user_id` in chat_threads
+- `thread_id` in chat_messages
+- `created_at` in chat_messages
+- `is_pinned` in chat_threads (partial index)
+- `referenced_documents` in chat_messages (GIN index)
 
 ## Troubleshooting
 
