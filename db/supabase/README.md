@@ -1,6 +1,6 @@
 # Supabase Vector Store Setup
 
-This directory contains SQL scripts to set up your Supabase database for vector search functionality and user role management.
+This directory contains SQL scripts to set up your Supabase database for vector search functionality, user role management, and chat thread storage.
 
 ## Setup Instructions
 
@@ -8,13 +8,15 @@ This directory contains SQL scripts to set up your Supabase database for vector 
 2. Run the scripts in numerical order:
    - First run `01_setup_vector_extension.sql` to enable the pgvector extension
    - Then run `02_create_documents_table.sql` to create the necessary table and functions
-   - Finally run `03_setup_user_roles.sql` to set up user role management
+   - Then run `03_setup_user_roles.sql` to set up user role management
+   - Finally run `05_create_chat_threads.sql` to set up chat thread storage
 
 ## What These Scripts Do
 
 - `01_setup_vector_extension.sql`: Enables the pgvector extension which allows the database to store and query vector embeddings
 - `02_create_documents_table.sql`: Creates the `documents` table with a vector column and the `match_documents` function used for similarity search
 - `03_setup_user_roles.sql`: Sets up user role management with three tiers (free, pro, admin) and necessary security policies
+- `05_create_chat_threads.sql`: Sets up tables and policies for storing chat conversations and messages
 
 ## Environment Variables
 
@@ -35,6 +37,26 @@ The system supports three user roles:
 - `admin`: Administrative users with full access
 
 Only admin users can change user roles using the `update_user_role` function.
+
+## Chat Threads Schema
+
+The chat system uses two main tables:
+
+### chat_threads
+- `id`: UUID (Primary Key)
+- `user_id`: UUID (References auth.users)
+- `title`: Text
+- `created_at`: Timestamp
+- `updated_at`: Timestamp
+
+### chat_messages
+- `id`: UUID (Primary Key)
+- `thread_id`: UUID (References chat_threads)
+- `role`: Text ('user', 'assistant', or 'system')
+- `content`: Text
+- `created_at`: Timestamp
+
+Row Level Security (RLS) policies ensure users can only access their own chat threads and messages.
 
 ## Troubleshooting
 
