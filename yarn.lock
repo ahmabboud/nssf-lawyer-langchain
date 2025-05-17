@@ -2024,16 +2024,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sparticuz/chromium@npm:^133.0.0":
-  version: 133.0.0
-  resolution: "@sparticuz/chromium@npm:133.0.0"
-  dependencies:
-    follow-redirects: ^1.15.9
-    tar-fs: ^3.0.8
-  checksum: 46bcf90fd40ff3c3ecc2fcb9bd9b189a3ca51fa394460b959dff32d1987f6cca1f6b89c0e50d98cd21357135b64d6eba2f3467e30b7033e272f553976662668a
-  languageName: node
-  linkType: hard
-
 "@supabase/auth-js@npm:2.69.1":
   version: 2.69.1
   resolution: "@supabase/auth-js@npm:2.69.1"
@@ -2134,15 +2124,6 @@ __metadata:
   dependencies:
     tslib: ^2.4.0
   checksum: 8d44c64e64e39c746e45b5dff7b534716f20e1f6e8fc206f8e4c8ac454ec0eb35b65646e446dd80745bc898db37a4eca549a936766d447c2158c9c43d44e7708
-  languageName: node
-  linkType: hard
-
-"@types/chrome-remote-interface@npm:^0.31.9":
-  version: 0.31.14
-  resolution: "@types/chrome-remote-interface@npm:0.31.14"
-  dependencies:
-    devtools-protocol: 0.0.927104
-  checksum: ee18730cf2d8b371fd19493f445d7b0c6ca02d4c01ce8eba1750dc7c1fd1a60287ecb251c4a5421a162dda06aa938b5049679e46fbeeba6e0e15c4cc44d5d3c7
   languageName: node
   linkType: hard
 
@@ -3249,32 +3230,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chrome-launcher@npm:^0.15.1":
-  version: 0.15.2
-  resolution: "chrome-launcher@npm:0.15.2"
-  dependencies:
-    "@types/node": "*"
-    escape-string-regexp: ^4.0.0
-    is-wsl: ^2.2.0
-    lighthouse-logger: ^1.0.0
-  bin:
-    print-chrome-path: bin/print-chrome-path.js
-  checksum: e1f8131b9f7bd931248ea85f413c6cdb93a0d41440ff5bf0987f36afb081d2b2c7b60ba6062ee7ae2dd9b052143f6b275b38c9eb115d11b49c3ea8829bad7db0
-  languageName: node
-  linkType: hard
-
-"chrome-remote-interface@npm:^0.32.1":
-  version: 0.32.2
-  resolution: "chrome-remote-interface@npm:0.32.2"
-  dependencies:
-    commander: 2.11.x
-    ws: ^7.2.0
-  bin:
-    chrome-remote-interface: bin/client.js
-  checksum: 8a9fab249675eb1301b50ed99258aba8a844c07b03b5b4481d395ed72086aab80a492da81108e191a95da82a5930464c9d3ea359f331de56cd75f8e303f3a120
-  languageName: node
-  linkType: hard
-
 "chromium-bidi@npm:3.0.0":
   version: 3.0.0
   resolution: "chromium-bidi@npm:3.0.0"
@@ -3377,13 +3332,6 @@ __metadata:
   version: 2.0.3
   resolution: "comma-separated-tokens@npm:2.0.3"
   checksum: e3bf9e0332a5c45f49b90e79bcdb4a7a85f28d6a6f0876a94f1bb9b2bfbdbbb9292aac50e1e742d8c0db1e62a0229a106f57917e2d067fca951d81737651700d
-  languageName: node
-  linkType: hard
-
-"commander@npm:2.11.x":
-  version: 2.11.0
-  resolution: "commander@npm:2.11.0"
-  checksum: 0d0c622d129a801699b9bbf6fa518108c7e221e51ae12457119aec52f1142ab759b6cd3348ee253604e934639e200c8f0e1cf8342a2ba4b28b3565a7322ead14
   languageName: node
   linkType: hard
 
@@ -3527,15 +3475,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^2.6.9":
-  version: 2.6.9
-  resolution: "debug@npm:2.6.9"
-  dependencies:
-    ms: 2.0.0
-  checksum: d2f51589ca66df60bf36e1fa6e4386b318c3f1e06772280eea5b1ae9fd3d05e9c2b7fd8a7d862457d00853c75b00451aa2d7459b924629ee385287a650f58fe6
-  languageName: node
-  linkType: hard
-
 "debug@npm:^3.1.0, debug@npm:^3.2.7":
   version: 3.2.7
   resolution: "debug@npm:3.2.7"
@@ -3642,13 +3581,6 @@ __metadata:
   version: 0.0.1425554
   resolution: "devtools-protocol@npm:0.0.1425554"
   checksum: 8ad301abee2146f0aff613c81c01570d787a0a01fc764fc8fbe0bdbac379d2f426d69fe0e38fbbb1342032f9e063910ec1d807d18e40af29a85eda88bfefc763
-  languageName: node
-  linkType: hard
-
-"devtools-protocol@npm:0.0.927104":
-  version: 0.0.927104
-  resolution: "devtools-protocol@npm:0.0.927104"
-  checksum: 13617e735f326b9822e64480060e59068434e937a6141ffe18353d0c7626be890e94d3118e7c262e6fd17eea3a4a2a18c221d0ff1eb31768ebcf0a0b95475d32
   languageName: node
   linkType: hard
 
@@ -4457,16 +4389,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.15.9":
-  version: 1.15.9
-  resolution: "follow-redirects@npm:1.15.9"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: 859e2bacc7a54506f2bf9aacb10d165df78c8c1b0ceb8023f966621b233717dab56e8d08baadc3ad3b9db58af290413d585c999694b7c146aaf2616340c3d2a6
-  languageName: node
-  linkType: hard
-
 "for-each@npm:^0.3.3, for-each@npm:^0.3.5":
   version: 0.3.5
   resolution: "for-each@npm:0.3.5"
@@ -4891,17 +4813,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-pdf-chrome@npm:^0.8.4":
-  version: 0.8.4
-  resolution: "html-pdf-chrome@npm:0.8.4"
-  dependencies:
-    "@types/chrome-remote-interface": ^0.31.9
-    chrome-launcher: ^0.15.1
-    chrome-remote-interface: ^0.32.1
-  checksum: 8efb29cd510a21d71fc662cc0f2b39da301f9e8a3ea38834258ffc453ff395217f3394b7b3d7eb6c3038427dedbfb158ff22a4f8248950ba9c5ed5d18b67d6ca
-  languageName: node
-  linkType: hard
-
 "html-url-attributes@npm:^3.0.0":
   version: 3.0.1
   resolution: "html-url-attributes@npm:3.0.1"
@@ -5166,15 +5077,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-docker@npm:^2.0.0":
-  version: 2.2.1
-  resolution: "is-docker@npm:2.2.1"
-  bin:
-    is-docker: cli.js
-  checksum: 3fef7ddbf0be25958e8991ad941901bf5922ab2753c46980b60b05c1bf9c9c2402d35e6dc32e4380b980ef5e1970a5d9d5e5aa2e02d77727c3b6b5e918474c56
-  languageName: node
-  linkType: hard
-
 "is-extglob@npm:^2.1.1":
   version: 2.1.1
   resolution: "is-extglob@npm:2.1.1"
@@ -5345,15 +5247,6 @@ __metadata:
     call-bound: ^1.0.3
     get-intrinsic: ^1.2.6
   checksum: 5c6c8415a06065d78bdd5e3a771483aa1cd928df19138aa73c4c51333226f203f22117b4325df55cc8b3085a6716870a320c2d757efee92d7a7091a039082041
-  languageName: node
-  linkType: hard
-
-"is-wsl@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "is-wsl@npm:2.2.0"
-  dependencies:
-    is-docker: ^2.0.0
-  checksum: 20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
   languageName: node
   linkType: hard
 
@@ -5584,7 +5477,6 @@ __metadata:
     "@radix-ui/react-slider": ^1.2.3
     "@radix-ui/react-slot": ^1.1.1
     "@radix-ui/react-tabs": ^1.1.3
-    "@sparticuz/chromium": ^133.0.0
     "@supabase/supabase-js": ^2.32.0
     "@types/node": 20.12.12
     "@types/react": 18.3.2
@@ -5598,7 +5490,6 @@ __metadata:
     docx: ^9.3.0
     eslint: 8.46.0
     eslint-config-next: 13.4.12
-    html-pdf-chrome: ^0.8.4
     jszip: ^3.10.1
     langchain: ^0.3.11
     lucide-react: ^0.473.0
@@ -5759,16 +5650,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lighthouse-logger@npm:^1.0.0":
-  version: 1.4.2
-  resolution: "lighthouse-logger@npm:1.4.2"
-  dependencies:
-    debug: ^2.6.9
-    marky: ^1.2.2
-  checksum: ba6b73d93424318fab58b4e07c9ed246e3e969a3313f26b69515ed4c06457dd9a0b11bc706948398fdaef26aa4ba5e65cb848c37ce59f470d3c6c450b9b79a33
-  languageName: node
-  linkType: hard
-
 "lilconfig@npm:^2.1.0":
   version: 2.1.0
   resolution: "lilconfig@npm:2.1.0"
@@ -5901,13 +5782,6 @@ __metadata:
   bin:
     mammoth: bin/mammoth
   checksum: d9526970fa95a75798ec992e98865678c71f489525d54517d0316c5a2954341cacbf9e629d9467bd0a40892a1b937755ce8c6b66e46c9ff2e95a00a612e07b8f
-  languageName: node
-  linkType: hard
-
-"marky@npm:^1.2.2":
-  version: 1.3.0
-  resolution: "marky@npm:1.3.0"
-  checksum: c25fe1d45525e317f89d116e87a50d385cc7e7d0d418548e75334273cb97990db37228c365718b5572077c80f22a599c732ccbd3da9728cd806465d63c786eda
   languageName: node
   linkType: hard
 
@@ -6436,13 +6310,6 @@ __metadata:
   version: 1.0.1
   resolution: "mrmime@npm:1.0.1"
   checksum: cc979da44bbbffebaa8eaf7a45117e851f2d4cb46a3ada6ceb78130466a04c15a0de9a9ce1c8b8ba6f6e1b8618866b1352992bf1757d241c0ddca558b9f28a77
-  languageName: node
-  linkType: hard
-
-"ms@npm:2.0.0":
-  version: 2.0.0
-  resolution: "ms@npm:2.0.0"
-  checksum: 0e6a22b8b746d2e0b65a430519934fefd41b6db0682e3477c10f60c76e947c4c0ad06f63ffdf1d78d335f83edee8c0aa928aa66a36c7cd95b69b26f468d527f4
   languageName: node
   linkType: hard
 
@@ -9145,7 +9012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.2.0, ws@npm:^7.3.1":
+"ws@npm:^7.3.1":
   version: 7.5.10
   resolution: "ws@npm:7.5.10"
   peerDependencies:

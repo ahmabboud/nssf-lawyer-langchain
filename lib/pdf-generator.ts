@@ -1,39 +1,49 @@
-// lib/pdf-generator.ts
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import puppeteer from 'puppeteer';
 
-export const generatePdfFromHtml = async (html: string) => {
-  let browser = null;
-  try {
-    const isDev = process.env.NODE_ENV === "development";
-    
-    browser = await puppeteer.launch({
-      executablePath: isDev 
-        ? "/usr/bin/chromium-browser"  // Local development path
-        : await chromium.executablePath(),
-      args: isDev 
-        ? ["--no-sandbox", "--disable-setuid-sandbox"]
-        : [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-      headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport,
-    });
+// Function to generate PDF from HTML content with Arabic RTL support
+export const generatePdfFromHtml = async (content: string): Promise<Buffer> => {
+  // Replace newlines (\n) with <br> for proper line breaks
+  const htmlContent = content.replace(/\n/g, '<br />');
 
-    const page = await browser.newPage();
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 30000
-    });
+  // Wrap the content in full RTL HTML
+  const fullHtml = `
+    <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body {
+            direction: rtl;
+            font-family: 'Arial', 'Amiri', 'Noto Naskh Arabic', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 2em;
+          }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+    </html>
+  `;
 
-    // Wait for fonts and dynamic content
-    await page.evaluateHandle("document.fonts.ready");
-    
-    return await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "80px", right: "50px", bottom: "80px", left: "50px" },
-      timeout: 60000
-    });
-  } finally {
-    if (browser) await browser.close();
-  }
+  // Launch a new headless browser
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  // Set the full HTML content
+  await page.setContent(fullHtml, {
+    waitUntil: 'domcontentloaded',
+  });
+
+  // Generate the PDF
+  const pdfBufferArray = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    landscape: false,
+  });
+
+  const buffer = Buffer.from(pdfBufferArray);
+
+  await browser.close();
+  return buffer;
 };
