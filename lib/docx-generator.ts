@@ -16,7 +16,6 @@ export async function generateDocxFromText(content: string) {
       const text = line.replace(/^### /, '');
       return new Paragraph({
         alignment: AlignmentType.RIGHT,
-        rightToLeft: true,
         heading: HeadingLevel.HEADING_3,
         children: [
           new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
@@ -26,7 +25,6 @@ export async function generateDocxFromText(content: string) {
       const text = line.replace(/^## /, '');
       return new Paragraph({
         alignment: AlignmentType.RIGHT,
-        rightToLeft: true,
         heading: HeadingLevel.HEADING_2,
         children: [
           new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
@@ -36,7 +34,6 @@ export async function generateDocxFromText(content: string) {
       const text = line.replace(/^# /, '');
       return new Paragraph({
         alignment: AlignmentType.RIGHT,
-        rightToLeft: true,
         heading: HeadingLevel.HEADING_1,
         children: [
           new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
@@ -44,7 +41,7 @@ export async function generateDocxFromText(content: string) {
       });
     }
 
-    // Handle inline bold text using **bold**
+    // Handle bold using **bold**
     const parts: TextRun[] = [];
     const regex = /\*\*(.+?)\*\*/g;
     let lastIndex = 0;
@@ -77,7 +74,6 @@ export async function generateDocxFromText(content: string) {
       lastIndex = end;
     }
 
-    // Add remaining non-bold text
     if (lastIndex < line.length) {
       parts.push(
         new TextRun({
@@ -90,7 +86,6 @@ export async function generateDocxFromText(content: string) {
 
     return new Paragraph({
       alignment: AlignmentType.RIGHT,
-      rightToLeft: true,
       children: parts.length > 0
         ? parts
         : [new TextRun({ text: line, font: 'Arial', rtl: true })],
@@ -101,6 +96,7 @@ export async function generateDocxFromText(content: string) {
     sections: [
       {
         properties: {
+          // RTL is set here globally for the section
           rightToLeft: true,
         },
         children: paragraphs,
