@@ -1,45 +1,77 @@
-import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 
-export const generatePdfFromHtml = async (content: string): Promise<Buffer> => {
-  const htmlContent = content.replace(/\n/g, '<br />');
+export async function generatePdfFromHtml(content: string) {
+  const isProd = process.env.NODE_ENV === 'production';
 
-  const fullHtml = `
-    <html dir="rtl" lang="ar">
+  const puppeteer = isProd
+    ? await import('puppeteer-core')
+    : await import('puppeteer');
+
+  const browser = await puppeteer.default.launch({
+    args: isProd ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox'],
+    defaultViewport: chromium.defaultViewport,
+    executablePath: isProd ? await chromium.executablePath() : undefined,
+    headless: true,
+  });
+
+  const page = await browser.newPage();
+
+  // Inject styles and parse basic markdown
+  const html = `
+    <html lang="ar" dir="rtl">
       <head>
-        <meta charset="UTF-8">
+        <meta charset="UTF-8" />
         <style>
           body {
+            font-family: Arial, sans-serif;
             direction: rtl;
-            font-family: 'Arial', 'Amiri', 'Noto Naskh Arabic', sans-serif;
+            text-align: right;
+            padding: 2rem;
+          }
+          h1, h2, h3 {
+            font-weight: bold;
+          }
+          h1 { font-size: 24px; }
+          h2 { font-size: 20px; }
+          h3 { font-size: 18px; }
+          p {
             font-size: 16px;
-            line-height: 1.6;
-            padding: 2em;
+            margin-bottom: 10px;
           }
         </style>
       </head>
       <body>
-        ${htmlContent}
+        ${parseMarkdownToHtml(content)}
       </body>
     </html>
   `;
 
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(),
-    headless: chromium.headless,
-  });
+  await page.setContent(html, { waitUntil: 'networkidle0' });
 
-  const page = await browser.newPage();
-  await page.setContent(fullHtml, { waitUntil: 'domcontentloaded' });
-
-  // Convert Uint8Array to Buffer
-  const pdfBuffer = Buffer.from(await page.pdf({
+  const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
-  }));
+  });
 
   await browser.close();
   return pdfBuffer;
-};
+}
+function parseMarkdownToHtml(markdown: string): string {
+  const lines = markdown.split('\n');
+
+  return lines
+    .map((line) => {
+      if (/^### (.+)/.test(line)) {
+        return `<h3>${line.replace(/^### /, '')}</h3>`;
+      } else if (/^## (.+)/.test(line)) {
+        return `<h2>${line.replace(/^## /, '')}</h2>`;
+      } else if (/^# (.+)/.test(line)) {
+        return `<h1>${line.replace(/^# /, '')}</h1>`;
+      } else {
+        // Handle inline bold using **bold**
+        const bolded = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        return `<p>${bolded}</p>`;
+      }
+    })
+    .join('\n');
+}
