@@ -18,7 +18,7 @@ export async function generateDocxFromText(content: string) {
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_3,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
+          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
         ],
       });
     } else if (/^## (.+)/.test(line)) {
@@ -27,7 +27,7 @@ export async function generateDocxFromText(content: string) {
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_2,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
+          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
         ],
       });
     } else if (/^# (.+)/.test(line)) {
@@ -36,7 +36,7 @@ export async function generateDocxFromText(content: string) {
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_1,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
+          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
         ],
       });
     }
@@ -57,7 +57,7 @@ export async function generateDocxFromText(content: string) {
           new TextRun({
             text: line.substring(lastIndex, start),
             font: 'Arial',
-            rtl: true,
+            bidirectional: true,
           })
         );
       }
@@ -67,7 +67,7 @@ export async function generateDocxFromText(content: string) {
           text: boldText,
           bold: true,
           font: 'Arial',
-          rtl: true,
+          bidirectional: true,
         })
       );
 
@@ -79,7 +79,7 @@ export async function generateDocxFromText(content: string) {
         new TextRun({
           text: line.substring(lastIndex),
           font: 'Arial',
-          rtl: true,
+          bidirectional: true,
         })
       );
     }
@@ -88,7 +88,7 @@ export async function generateDocxFromText(content: string) {
       alignment: AlignmentType.RIGHT,
       children: parts.length > 0
         ? parts
-        : [new TextRun({ text: line, font: 'Arial', rtl: true })],
+        : [new TextRun({ text: line, font: 'Arial', bidirectional: true })],
     });
   });
 
@@ -96,8 +96,7 @@ export async function generateDocxFromText(content: string) {
     sections: [
       {
         properties: {
-          // RTL is set here globally for the section
-          rightToLeft: true,
+          rightToLeft: true, // RTL for the whole section
         },
         children: paragraphs,
       },
