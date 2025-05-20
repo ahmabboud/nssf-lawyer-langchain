@@ -15,33 +15,36 @@ export async function generateDocxFromText(content: string) {
     if (/^### (.+)/.test(line)) {
       const text = line.replace(/^### /, '');
       return new Paragraph({
+        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_3,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
+          new TextRun({ text, bold: true, font: 'Arial' }),
         ],
       });
     } else if (/^## (.+)/.test(line)) {
       const text = line.replace(/^## /, '');
       return new Paragraph({
+        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_2,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
+          new TextRun({ text, bold: true, font: 'Arial' }),
         ],
       });
     } else if (/^# (.+)/.test(line)) {
       const text = line.replace(/^# /, '');
       return new Paragraph({
+        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_1,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial', bidirectional: true }),
+          new TextRun({ text, bold: true, font: 'Arial' }),
         ],
       });
     }
 
-    // Handle bold using **bold**
+    // Handle inline bold text using **bold**
     const parts: TextRun[] = [];
     const regex = /\*\*(.+?)\*\*/g;
     let lastIndex = 0;
@@ -57,7 +60,6 @@ export async function generateDocxFromText(content: string) {
           new TextRun({
             text: line.substring(lastIndex, start),
             font: 'Arial',
-            bidirectional: true,
           })
         );
       }
@@ -67,37 +69,35 @@ export async function generateDocxFromText(content: string) {
           text: boldText,
           bold: true,
           font: 'Arial',
-          bidirectional: true,
         })
       );
 
       lastIndex = end;
     }
 
+    // Add remaining non-bold text
     if (lastIndex < line.length) {
       parts.push(
         new TextRun({
           text: line.substring(lastIndex),
           font: 'Arial',
-          bidirectional: true,
         })
       );
     }
 
     return new Paragraph({
+      bidirectional: true,
       alignment: AlignmentType.RIGHT,
       children: parts.length > 0
         ? parts
-        : [new TextRun({ text: line, font: 'Arial', bidirectional: true })],
+        : [new TextRun({ text: line, font: 'Arial' })],
     });
   });
 
   const doc = new Document({
     sections: [
       {
-        properties: {
-          rightToLeft: true, // RTL for the whole section
-        },
+        properties: {},
         children: paragraphs,
       },
     ],
