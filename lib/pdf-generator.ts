@@ -18,33 +18,34 @@ export async function generatePdfFromHtml(content: string) {
 
   // Inject styles and parse basic markdown
   const html = `
-    <html lang="ar" dir="rtl">
-      <head>
-        <meta charset="UTF-8" />
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            direction: rtl;
-            text-align: right;
-            padding: 2rem;
-          }
-          h1, h2, h3 {
-            font-weight: bold;
-          }
-          h1 { font-size: 24px; }
-          h2 { font-size: 20px; }
-          h3 { font-size: 18px; }
-          p {
-            font-size: 16px;
-            margin-bottom: 10px;
-          }
-        </style>
-      </head>
-      <body>
-        ${parseMarkdownToHtml(content)}
-      </body>
-    </html>
-  `;
+  <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8" />
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+      <style>
+        body {
+          font-family: 'Cairo', sans-serif;
+          direction: rtl;
+          text-align: right;
+          padding: 2rem;
+        }
+        h1, h2, h3 {
+          font-weight: bold;
+        }
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; }
+        h3 { font-size: 18px; }
+        p {
+          font-size: 16px;
+          margin-bottom: 10px;
+        }
+      </style>
+    </head>
+    <body>
+      ${parseMarkdownToHtml(content)}
+    </body>
+  </html>
+`;
 
   await page.setContent(html, { waitUntil: 'networkidle0' });
 

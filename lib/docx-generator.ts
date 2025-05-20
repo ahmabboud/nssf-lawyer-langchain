@@ -15,31 +15,31 @@ export async function generateDocxFromText(content: string) {
     if (/^### (.+)/.test(line)) {
       const text = line.replace(/^### /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
+        rightToLeft: true,
         heading: HeadingLevel.HEADING_3,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial' }),
+          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
         ],
       });
     } else if (/^## (.+)/.test(line)) {
       const text = line.replace(/^## /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
+        rightToLeft: true,
         heading: HeadingLevel.HEADING_2,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial' }),
+          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
         ],
       });
     } else if (/^# (.+)/.test(line)) {
       const text = line.replace(/^# /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
+        rightToLeft: true,
         heading: HeadingLevel.HEADING_1,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial' }),
+          new TextRun({ text, bold: true, font: 'Arial', rtl: true }),
         ],
       });
     }
@@ -60,6 +60,7 @@ export async function generateDocxFromText(content: string) {
           new TextRun({
             text: line.substring(lastIndex, start),
             font: 'Arial',
+            rtl: true,
           })
         );
       }
@@ -69,6 +70,7 @@ export async function generateDocxFromText(content: string) {
           text: boldText,
           bold: true,
           font: 'Arial',
+          rtl: true,
         })
       );
 
@@ -81,23 +83,26 @@ export async function generateDocxFromText(content: string) {
         new TextRun({
           text: line.substring(lastIndex),
           font: 'Arial',
+          rtl: true,
         })
       );
     }
 
     return new Paragraph({
-      bidirectional: true,
       alignment: AlignmentType.RIGHT,
+      rightToLeft: true,
       children: parts.length > 0
         ? parts
-        : [new TextRun({ text: line, font: 'Arial' })],
+        : [new TextRun({ text: line, font: 'Arial', rtl: true })],
     });
   });
 
   const doc = new Document({
     sections: [
       {
-        properties: {},
+        properties: {
+          rightToLeft: true,
+        },
         children: paragraphs,
       },
     ],
