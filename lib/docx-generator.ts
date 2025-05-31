@@ -15,19 +15,19 @@ export async function generateDocxFromText(content: string) {
     if (/^### (.+)/.test(line)) {
       const text = line.replace(/^### /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_3,
+        bidirectional: true,
         children: [
-          new TextRun({ text, bold: true, font: 'Arial' }),
+          new TextRun({ text, bold: true, font: 'Arial' }), // or "Amiri"
         ],
       });
     } else if (/^## (.+)/.test(line)) {
       const text = line.replace(/^## /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_2,
+        bidirectional: true,
         children: [
           new TextRun({ text, bold: true, font: 'Arial' }),
         ],
@@ -35,16 +35,16 @@ export async function generateDocxFromText(content: string) {
     } else if (/^# (.+)/.test(line)) {
       const text = line.replace(/^# /, '');
       return new Paragraph({
-        bidirectional: true,
         alignment: AlignmentType.RIGHT,
         heading: HeadingLevel.HEADING_1,
+        bidirectional: true,
         children: [
           new TextRun({ text, bold: true, font: 'Arial' }),
         ],
       });
     }
 
-    // Handle inline bold text using **bold**
+    // Handle bold using **bold**
     const parts: TextRun[] = [];
     const regex = /\*\*(.+?)\*\*/g;
     let lastIndex = 0;
@@ -75,7 +75,6 @@ export async function generateDocxFromText(content: string) {
       lastIndex = end;
     }
 
-    // Add remaining non-bold text
     if (lastIndex < line.length) {
       parts.push(
         new TextRun({
@@ -86,8 +85,8 @@ export async function generateDocxFromText(content: string) {
     }
 
     return new Paragraph({
-      bidirectional: true,
       alignment: AlignmentType.RIGHT,
+      bidirectional: true,
       children: parts.length > 0
         ? parts
         : [new TextRun({ text: line, font: 'Arial' })],
@@ -97,7 +96,9 @@ export async function generateDocxFromText(content: string) {
   const doc = new Document({
     sections: [
       {
-        properties: {},
+        properties: {
+          rightToLeft: true, // ✅ enables RTL layout for the entire section
+        },
         children: paragraphs,
       },
     ],
