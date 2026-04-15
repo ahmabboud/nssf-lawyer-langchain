@@ -12,7 +12,7 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
-import { createRetrieverTool } from "langchain/tools/retriever";
+import { DynamicTool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 
 export const runtime = "edge";
@@ -88,9 +88,13 @@ export async function POST(req: NextRequest) {
      * Wrap the retriever in a tool to present it to the agent in a
      * usable form.
      */
-    const tool = createRetrieverTool(retriever, {
+    const tool = new DynamicTool({
       name: "search_latest_knowledge",
       description: "Searches and returns up-to-date general information.",
+      func: async (query: string) => {
+        const docs = await retriever.invoke(query);
+        return docs.map((doc) => doc.pageContent).join("\n\n");
+      },
     });
 
     /**

@@ -3,7 +3,7 @@ import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { HttpResponseOutputParser } from "langchain/output_parsers";
+import { BytesOutputParser } from "@langchain/core/output_parsers";
 
 export const runtime = "edge";
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
      * Chat models stream message chunks rather than bytes, so this
      * output parser handles serialization and byte-encoding.
      */
-    const outputParser = new HttpResponseOutputParser();
+    const outputParser = new BytesOutputParser();
 
     /**
      * Can also initialize as:

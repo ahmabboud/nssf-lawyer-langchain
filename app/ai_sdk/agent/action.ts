@@ -1,10 +1,9 @@
 "use server";
 
 import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
-import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
-import { pull } from "langchain/hub";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
+import { TavilySearch } from "@langchain/tavily";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { createStreamableValue } from "ai/rsc";
 
 export async function runAgent(input: string) {
@@ -12,23 +11,20 @@ export async function runAgent(input: string) {
 
   const stream = createStreamableValue();
   (async () => {
-    const tools = [new TavilySearchResults({ maxResults: 1 })];
-    const prompt = await pull<ChatPromptTemplate>(
-      "hwchase17/openai-tools-agent",
-    );
+    const tools = [new TavilySearch({ maxResults: 1 })];
 
     const llm = new ChatOpenAI({ model: "gpt-4o-mini", temperature: 0 });
 
-    const agent = createToolCallingAgent({
+    const agent = createReactAgent({
       llm,
       tools,
-      prompt,
+      messageModifier: new SystemMessage(
+        "You are a helpful assistant. Use the tools provided to best assist the user.",
+      ),
     });
 
-    const agentExecutor = new AgentExecutor({ agent, tools });
-
-    const streamingEvents = agentExecutor.streamEvents(
-      { input },
+    const streamingEvents = agent.streamEvents(
+      { messages: [new HumanMessage(input)] },
       { version: "v2" },
     );
 

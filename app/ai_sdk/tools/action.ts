@@ -3,7 +3,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { createStreamableValue } from "ai/rsc";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { Runnable } from "@langchain/core/runnables";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { JsonOutputKeyToolsParser } from "@langchain/core/output_parsers/openai_tools";
@@ -51,8 +51,7 @@ export async function executeTool(
     } else {
       chain = prompt
         .pipe(
-          llm.bind({
-            tools: [
+          llm.bindTools([
               {
                 type: "function" as const,
                 function: {
@@ -61,8 +60,7 @@ export async function executeTool(
                   parameters: zodToJsonSchema(Weather),
                 },
               },
-            ],
-          }),
+            ]),
         )
         .pipe(
           new JsonOutputKeyToolsParser<z.infer<typeof Weather>>({
