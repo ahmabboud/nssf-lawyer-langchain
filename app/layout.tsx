@@ -1,12 +1,24 @@
 import "./globals.css";
-import { Public_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { ActiveLink } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { GithubIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-const publicSans = Public_Sans({ subsets: ["latin"] });
+const publicSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/public-sans-latin-wght-normal.woff2",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/public-sans-latin-wght-italic.woff2",
+      style: "italic",
+    },
+  ],
+  variable: "--font-public-sans",
+});
 
 const Logo = () => (
   <svg
